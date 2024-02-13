@@ -1,0 +1,823 @@
+---
+title: "Aspen Preliminary Visualizations"
+format: 
+  html:
+    embed-resources: true
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r, message = FALSE}
+library(tidyverse)
+library(khroma)
+aspen <- aspen::fetchAndWrangleAspen()
+```
+
+```{r}
+# find number of plots in each watershed
+
+# TODO: update this to Allsites tables once not used sites are removed
+
+aspen$data$AllSites <- aspen$data$AllSites %>%
+  filter(Site %in% aspen$data$SiteVisit$Site) %>%
+      # Find Number of plot in each watershed
+  group_by(Stratum) %>%
+  mutate(numberOfPlotsInWatershed = n()) %>%
+  ungroup() %>%
+  group_by(Community) %>%
+  # Find number of plots in each community
+  mutate(numberOfPlotsInCommunity = n()) %>%
+  ungroup()
+```
+
+
+# Vegetation Community
+
+#### Density of Live Aspens
+
+```{r}
+# 4 meter radius of plots
+# area = pi*r^2
+# density = #/ha
+
+aspenDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Add up LIVE POTR5 for each row
+  mutate(totalLiveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Community) %>%
+  summarise(density = sum(totalLiveTrees)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+            sumLiveTrees = sum(totalLiveTrees),
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity))
+
+
+aspenDensityGraph <- aspenDensity %>%
+  ggplot(aes(x= Community, y = density)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Aspen Density",
+       x = "Community", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(aspenDensityGraph)
+```
+
+#### Density of Live Aspens per Plot
+
+```{r}
+# 4 meter radius of plots
+# area = pi*r^2
+# density = #/ha
+
+aspenDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Find density for each plot
+  mutate(density = (Class1+Class2+Class3+Class4+Class5)/((pi * 4^2)/10000))
+
+
+aspenDensityGraph <- aspenDensity %>%
+  ggplot(aes(x= Community, y = density)) +
+  geom_violin() +
+  #geom_col() +
+  theme_minimal() +
+  labs(title = "Aspen Density",
+       x = "Community", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315, hjust = 0.0))
+
+aspenDensityGraph
+```
+
+#### Density of Conifers
+
+```{r}
+coniferDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # Find Number of plot in each watershed
+  # group_by(Community) %>%
+  # mutate(numberOfPlots = n_distinct(Site)) %>%
+  # ungroup() %>%
+  # filter for POTR5
+  filter(SpeciesCode != "POTR5" & SpeciesCode != "BEUC2") %>%
+  # Add up LIVE POTR5 for each row
+  mutate(totalLiveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Community) %>%
+  summarise(density = sum(totalLiveTrees)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+            sumLiveTrees = sum(totalLiveTrees),
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity))
+
+
+coniferDensityGraph <- coniferDensity %>%
+  ggplot(aes(x= Community, y = density)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Conifer Density",
+       x = "Community", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(coniferDensityGraph)
+```
+
+
+#### Density of Conifers per Plot
+
+```{r}
+# 4 meter radius of plots
+# area = pi*r^2
+# density = #/ha
+
+# TODO: should i aggregate all the different types of conifers per plot before graphing?? - probably yea i think so
+
+coniferDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode != "POTR5" & SpeciesCode != "BEUC2") %>%
+  # Find total live trees in each row
+  mutate(treeSum = Class1+Class2+Class3+Class4+Class5) %>%
+  group_by(Site, Community) %>%
+  summarise(totalTrees = sum(treeSum)) %>%
+  # Find density for each plot
+  mutate(density = (totalTrees)/((pi * 4^2)/10000))
+
+
+coniferDensityGraph <- coniferDensity %>%
+  ggplot(aes(x= Community, y = density, fill = Community)) +
+  geom_violin() +
+  #geom_col() +
+  theme_minimal() +
+  labs(title = "Conifer Density",
+       x = "Community", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315, hjust = 0)) +
+  scale_fill_light() + 
+  guides(fill="none")
+
+coniferDensityGraph
+```
+
+#### Density of Aspen vs Conifers
+
+```{r}
+compareDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+    # filter out one species that is not aspen or conifer
+  filter(SpeciesCode != "BEUC2") %>%
+  mutate(isAspen = case_when(
+    SpeciesCode == "POTR5" ~ 'Aspen',
+    .default = 'Conifer'
+  )) %>%
+  # Add up live trees for each row
+  mutate(liveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Community, isAspen) %>%
+  summarise(density = sum(liveTrees)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+            totalLiveTrees = sum(liveTrees),
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity))
+
+
+compareDensityGraph <- compareDensity %>%
+  ggplot(aes(x= Community, y = density, fill = as.factor(isAspen))) +
+  geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Aspen and Conifer Density",
+       x = "Community", y = "Density (#/ha)",
+       fill = "Species") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))  +
+  scale_fill_light()  +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(compareDensityGraph)
+```
+
+
+#### Density of Aspen vs Conifers per Plot
+
+```{r}
+compareDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+    # filter out one species that is not aspen or conifer
+  filter(SpeciesCode != "BEUC2") %>%
+  mutate(isAspen = case_when(
+    SpeciesCode == "POTR5" ~ 'Aspen',
+    .default = 'Conifer'
+  )) %>%
+    # Find density for each plot
+  mutate(density = (Class1+Class2+Class3+Class4+Class5)/((pi * 4^2)/10000))
+  # # Add up live trees for each row
+  # mutate(liveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  # group_by(Community, isAspen) %>%
+  # summarise(density = sum(liveTrees)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+  #           totalLiveTrees = sum(liveTrees),
+  #           numberOfPlotsInCommunity = first(numberOfPlotsInCommunity))
+
+
+compareDensityGraph <- compareDensity %>%
+  ggplot(aes(x= Community, y = density, fill = as.factor(isAspen))) +
+  geom_boxplot() +
+  #geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Aspen and Conifer Density",
+       x = "Community", y = "Density (#/ha)",
+       fill = "Species") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))  +
+  scale_fill_light()  +
+  theme(axis.text.x = element_text(size = 6, angle = 315, hjust = 0))
+
+compareDensityGraph
+```
+
+#### Density of Aspen Age Groups
+
+```{r}
+ageGroupCommunity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Pivot longer to make calculations easier
+  pivot_longer(cols = Class1:Class6, names_to = "class", values_to = "treeCount") %>%
+  # summarize POTR5 for each age group divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Community, class) %>%
+  summarise(density = sum(treeCount)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+            sumLiveTrees = sum(treeCount),
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity)) 
+
+
+ageGroupCommunityGraph <- ageGroupCommunity %>%
+  ggplot(aes(x= Community, y = density, fill = factor(class))) +
+  geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Age Class Density",
+       x = "Community", y = "Density (#/ha)",
+       fill = "Age Class") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light()  +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(ageGroupCommunityGraph)
+```
+
+
+#### Density of Aspen Age Groups Boxplot
+
+```{r}
+ageGroupCommunity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Pivot longer to make calculations easier
+  pivot_longer(cols = Class1:Class6, names_to = "class", values_to = "treeCount") %>%
+  mutate(density = treeCount/(pi * 4^2/10000))
+  # # summarize POTR5 for each age group divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  # group_by(Community, class) %>%
+  # summarise(density = sum(treeCount)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+  #           sumLiveTrees = sum(treeCount),
+  #           numberOfPlotsInCommunity = first(numberOfPlotsInCommunity)) 
+
+
+ageGroupCommunityGraph <- ageGroupCommunity %>%
+  ggplot(aes(x= Community, y = density, fill = factor(class))) +
+  geom_boxplot() +
+  #geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Age Class Density",
+       x = "Community", y = "Density (#/ha)",
+       fill = "Age Class") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light()  +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+#plotly::ggplotly(ageGroupCommunityGraph)
+ageGroupCommunityGraph
+```
+
+#### Density of Aspen Age Groups Line Graph
+
+```{r}
+ageGroupCommunity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Pivot longer to make calculations easier
+  pivot_longer(cols = Class1:Class6, names_to = "class", values_to = "treeCount") %>%
+  # summarize POTR5 for each age group divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Community, class) %>%
+  summarise(density = sum(treeCount)/((first(numberOfPlotsInCommunity) * pi * 4^2)/10000),
+            sumLiveTrees = sum(treeCount),
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity)) 
+
+
+ageGroupCommunityGraph <- ageGroupCommunity %>%
+  ggplot(aes(x= class, y = density, color = factor(Community))) +
+  geom_line(aes(group = factor(Community))) + 
+  #geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Age Class Density",
+       x = "Age Class", y = "Density (#/ha)",
+       color = "Community") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light() + 
+  guides(color="none")
+# +
+#   theme(axis.text.x = element_text(size = 6, angle = 315))
+
+#ageGroupCommunityGraph
+plotly::ggplotly(ageGroupCommunityGraph)
+```
+
+#### Frequency of Disturbances
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each community)
+
+disturbancesFrequency <- aspen$data$Disturbances %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Disturbance = first(Disturbance)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  group_by(Community) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithDisturbances = sum(!is.na(Disturbance)), 
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity),
+            frequency = (first(plotsWithDisturbances) * pi * 4^2)/(first(numberOfPlotsInCommunity) * pi * 4^2)*100)
+
+disturbancesGraph <- disturbancesFrequency %>%
+  ggplot(aes(x = Community, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Disturbance Frequency",
+       x = "Community", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(disturbancesGraph)
+```
+
+
+#### Frequency of Disturbances by Plot
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each community)
+
+disturbancesFrequency <- aspen$data$Disturbances %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Disturbance = first(Disturbance)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  group_by(Community) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithDisturbances = sum(!is.na(Disturbance)), 
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity),
+            frequency = (first(plotsWithDisturbances) * pi * 4^2)/(first(numberOfPlotsInCommunity) * pi * 4^2)*100)
+
+disturbancesGraph <- disturbancesFrequency %>%
+  ggplot(aes(x = Community, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Disturbance Frequency",
+       x = "Community", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(disturbancesGraph)
+```
+
+#### Frequency of Pests
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each community)
+
+pestFrequency <- aspen$data$Pests %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Pest = first(Pest)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
+  group_by(Community) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithPests = sum(!is.na(Pest)), 
+            numberOfPlotsInCommunity = first(numberOfPlotsInCommunity),
+            frequency = (first(plotsWithPests) * pi * 4^2)/(first(numberOfPlotsInCommunity) * pi * 4^2)*100)
+
+pestGraph <- pestFrequency %>%
+  ggplot(aes(x = Community, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Pest Frequency",
+       x = "Community", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 6, angle = 315))
+
+plotly::ggplotly(pestGraph)
+```
+
+
+# Watershed (Stratum)
+
+#### Density of Live Aspens
+
+```{r}
+# 4 meter radius of plots
+# area = pi*r^2
+# denisty = #/ha
+
+
+aspenDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Stratum", "numberOfPlotsInWatershed"))), by = join_by(Site)) %>%
+  # Find Number of plot in each watershed
+  # group_by(Stratum) %>%
+  # mutate(numberOfPlots = n_distinct(Site)) %>%
+  # ungroup() %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Add up LIVE POTR5 for each row
+  mutate(totalLiveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Stratum) %>%
+  summarise(density = sum(totalLiveTrees)/((first(numberOfPlotsInWatershed) * pi * 4^2)/10000),
+            sumLiveTrees = sum(totalLiveTrees),
+            numberOfPlotsInWatershed = first(numberOfPlotsInWatershed))
+
+
+aspenDensityGraph <- aspenDensity %>%
+  ggplot(aes(x= Stratum, y = density)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Aspen Density",
+       x = "Watershed", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(aspenDensityGraph)
+```
+
+
+#### Density of Conifers
+
+```{r}
+  
+coniferDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Stratum", "numberOfPlotsInWatershed"))), by = join_by(Site)) %>%
+  # Find Number of plot in each watershed
+  # group_by(Stratum) %>%
+  # mutate(numberOfPlotsInWaterShed = n_distinct(Site)) %>%
+  # ungroup() %>%
+  # filter for POTR5
+  filter(SpeciesCode != "POTR5" & SpeciesCode != "BEUC2") %>%
+  # Add up LIVE POTR5 for each row
+  mutate(totalLiveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Stratum) %>%
+  summarise(density = sum(totalLiveTrees)/((first(numberOfPlotsInWatershed) * pi * 4^2)/10000),
+            sumLiveTrees = sum(totalLiveTrees),
+            numberOfPlotsInWatershed = first(numberOfPlotsInWatershed))
+
+
+coniferDensityGraph <- coniferDensity %>%
+  ggplot(aes(x= Stratum, y = density)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Conifer Density",
+       x = "Watershed", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(coniferDensityGraph)
+```
+
+
+#### Density of Aspen vs Conifers
+
+```{r}
+compareDensity <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Stratum", "numberOfPlotsInWatershed"))), by = join_by(Site)) %>%
+    # filter out one species that is not aspen or conifer
+  filter(SpeciesCode != "BEUC2") %>%
+  mutate(isAspen = case_when(
+    SpeciesCode == "POTR5" ~ 'Aspen',
+    .default = 'Conifer'
+  )) %>%
+  # Add up live trees for each row
+  mutate(liveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Stratum, isAspen) %>%
+  summarise(density = sum(liveTrees)/((first(numberOfPlotsInWatershed) * pi * 4^2)/10000),
+            totalLiveTrees = sum(liveTrees),
+            numberOfPlotsInWatershed = first(numberOfPlotsInWatershed))
+
+
+compareDensityGraph <- compareDensity %>%
+  ggplot(aes(x= Stratum, y = density, fill = as.factor(isAspen))) +
+  geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Aspen and Conifer Density",
+       x = "Watershed", y = "Density (#/ha)",
+       fill = "Species") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light()
+
+plotly::ggplotly(compareDensityGraph)
+```
+
+
+#### Density of Aspen Age Groups
+
+```{r}
+ageGroupWatershed <- aspen$data$Observations %>%
+  left_join(select(aspen$data$AllSites, any_of(c("Site", "Stratum", "numberOfPlotsInWatershed"))), by = join_by(Site)) %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Pivot longer to make calculations easier
+  pivot_longer(cols = Class1:Class6, names_to = "class", values_to = "treeCount") %>%
+  # summarize POTR5 for each age group divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Stratum, class) %>%
+  summarise(density = sum(treeCount)/((first(numberOfPlotsInWatershed) * pi * 4^2)/10000),
+            sumLiveTrees = sum(treeCount),
+            numberOfPlotsInWatershed = first(numberOfPlotsInWatershed)) 
+
+
+ageGroupWatershedGraph <- ageGroupWatershed %>%
+  ggplot(aes(x= Stratum, y = density, fill = factor(class))) +
+  geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Age Class Density",
+       x = "Watershed", y = "Density (#/ha)",
+       fill = "Age Class") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light()
+
+plotly::ggplotly(ageGroupWatershedGraph)
+```
+
+
+
+
+#### Frequency of Disturbances
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each watershed)
+
+disturbancesFrequency <- aspen$data$Disturbances %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Disturbance = first(Disturbance)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Stratum", "numberOfPlotsInWatershed"))), by = join_by(Site)) %>%
+  group_by(Stratum) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithDisturbances = sum(!is.na(Disturbance)), 
+            numberOfPlotsInWatershed = first(numberOfPlotsInWatershed),
+            frequency = (first(plotsWithDisturbances) * pi * 4^2)/(first(numberOfPlotsInWatershed) * pi * 4^2)*100)
+
+disturbancesGraph <- disturbancesFrequency %>%
+  ggplot(aes(x = Stratum, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Disturbance Frequency",
+       x = "Watershed", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(disturbancesGraph)
+```
+
+
+#### Frequency of Pests
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each watershed)
+
+pestFrequency <- aspen$data$Pests %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Pest = first(Pest)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Stratum", "numberOfPlotsInWatershed"))), by = join_by(Site)) %>%
+  group_by(Stratum) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithPests = sum(!is.na(Pest)), 
+            numberOfPlotsInWatershed = first(numberOfPlotsInWatershed),
+            frequency = (first(plotsWithPests) * pi * 4^2)/(first(numberOfPlotsInWatershed) * pi * 4^2)*100)
+
+pestGraph <- pestFrequency %>%
+  ggplot(aes(x = Stratum, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Pest Frequency",
+       x = "Watershed", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(pestGraph)
+```
+
+
+# Park
+
+#### Density of Live Aspens
+
+```{r}
+# 4 meter radius of plots
+# area = pi*r^2
+# denisty = #/ha
+
+
+  
+aspenParkDensity <- aspen$data$Observations %>%
+  # Find number of plot in each park
+  group_by(Park) %>%
+  mutate(numberOfPlots = n_distinct(Site)) %>%
+  ungroup() %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Add up LIVE POTR5 for each row
+  mutate(totalLiveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Park) %>%
+  summarise(density = sum(totalLiveTrees)/((first(numberOfPlots) * pi * 4^2)/10000),
+            sumLiveTrees = sum(totalLiveTrees),
+            numberOfPlots = first(numberOfPlots))
+
+
+aspenParkDensityGraph <- aspenParkDensity %>%
+  ggplot(aes(x= Park, y = density)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Aspen Density",
+       x = "Park", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(aspenParkDensityGraph)
+```
+
+#### Density of Conifers
+
+```{r}
+# 4 meter radius of plots
+# area = pi*r^2
+# denisty = #/ha
+
+
+  
+coniferParkDensity <- aspen$data$Observations %>%
+  # Find number of plot in each park
+  group_by(Park) %>%
+  mutate(numberOfPlots = n_distinct(Site)) %>%
+  ungroup() %>%
+  # filter for POTR5
+  filter(SpeciesCode != "POTR5" & SpeciesCode != "BEUC2") %>%
+  # Add up LIVE POTR5 for each row
+  mutate(totalLiveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Park) %>%
+  summarise(density = sum(totalLiveTrees)/((first(numberOfPlots) * pi * 4^2)/10000),
+            sumLiveTrees = sum(totalLiveTrees),
+            numberOfPlots = first(numberOfPlots))
+
+
+coniferParkDensityGraph <- coniferParkDensity %>%
+  ggplot(aes(x= Park, y = density)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Conifer Density",
+       x = "Park", y = "Density (#/ha)") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(coniferParkDensityGraph)
+```
+
+
+#### Density of Aspen vs Conifers
+
+```{r}
+compareDensity <- aspen$data$Observations %>%
+    # Find number of plot in each park
+  group_by(Park) %>%
+  mutate(numberOfPlots = n_distinct(Site)) %>%
+  ungroup() %>%
+  # filter out one species that is not aspen or conifer
+  filter(SpeciesCode != "BEUC2") %>%
+  mutate(isAspen = case_when(
+    SpeciesCode == "POTR5" ~ 'Aspen',
+    .default = 'Conifer'
+  )) %>%
+  # Add up live trees for each row
+  mutate(liveTrees = Class1+Class2+Class3+Class4+Class5) %>%
+  # summarize total POTR5 divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Park, isAspen) %>%
+  summarise(density = sum(liveTrees)/((first(numberOfPlots) * pi * 4^2)/10000),
+            totalLiveTrees = sum(liveTrees),
+            numberOfPlots = first(numberOfPlots))
+
+
+compareDensityGraph <- compareDensity %>%
+  ggplot(aes(x= Park, y = density, fill = as.factor(isAspen))) +
+  geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Aspen and Conifer Density",
+       x = "Park", y = "Density (#/ha)",
+       fill = "Species") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light()
+
+plotly::ggplotly(compareDensityGraph)
+```
+
+#### Density of Aspen Age Groups
+
+```{r}
+ageGroupPark <- aspen$data$Observations %>%
+  # Find number of plot in each park
+  group_by(Park) %>%
+  mutate(numberOfPlots = n_distinct(Site)) %>%
+  ungroup() %>%
+  # filter for POTR5
+  filter(SpeciesCode == "POTR5") %>%
+  # Pivot longer to make calculations easier
+  pivot_longer(cols = Class1:Class6, names_to = "class", values_to = "treeCount") %>%
+  # summarize POTR5 for each age group divided by area converted to ha (area = (number of plots * pi * r^2)/10000 )
+  group_by(Park, class) %>%
+  summarise(density = sum(treeCount)/((first(numberOfPlots) * pi * 4^2)/10000),
+            sumLiveTrees = sum(treeCount),
+            numberOfPlots = first(numberOfPlots)) 
+
+
+ageGroupParkGraph <- ageGroupPark %>%
+  ggplot(aes(x= Park, y = density, fill = factor(class))) +
+  geom_col(position = position_dodge(preserve = "single"), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Age Class Density",
+       x = "Park", y = "Density (#/ha)",
+       fill = "Age Class") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_light()
+
+plotly::ggplotly(ageGroupParkGraph)
+```
+
+
+#### Frequency of Disturbances
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each park)
+
+disturbancesFrequency <- aspen$data$Disturbances %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Disturbance = first(Disturbance)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Park"))), by = join_by(Site)) %>%
+  group_by(Park) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithDisturbances = sum(!is.na(Disturbance)), 
+            numberOfPlotsInPark = n(),
+            frequency = (first(plotsWithDisturbances) * pi * 4^2)/(first(numberOfPlotsInPark) * pi * 4^2)*100)
+
+disturbancesGraph <- disturbancesFrequency %>%
+  ggplot(aes(x = Park, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Disturbance Frequency",
+       x = "Park", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(disturbancesGraph)
+```
+
+#### Frequency of Pests
+
+```{r}
+# Area of plots in which a disturbance occurs / total area of plots (for each park)
+
+pestFrequency <- aspen$data$Pests %>%
+  group_by(Site) %>%
+  # Group data so every site with a disturbance has only one entry
+  summarise(Pest = first(Pest)) %>%
+  # Join disturbance and all site data
+  full_join(select(aspen$data$AllSites, any_of(c("Site", "Park"))), by = join_by(Site)) %>%
+  group_by(Park) %>%
+  # Find out how many plots in a watershed were disturbed
+  summarise(plotsWithPests = sum(!is.na(Pest)), 
+            numberOfPlotsInPark = n(),
+            frequency = (first(plotsWithPests) * pi * 4^2)/(first(numberOfPlotsInPark) * pi * 4^2)*100)
+
+pestGraph <- pestFrequency %>%
+  ggplot(aes(x = Park, y = frequency)) +
+  geom_col() +
+  theme_minimal() +
+  labs(title = "Pest Frequency",
+       x = "Park", y = "Frequency") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plotly::ggplotly(pestGraph)
+```
+
