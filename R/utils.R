@@ -23,25 +23,37 @@ pkg_globals <- new.env(parent = emptyenv())
 fetchAndWrangleAspen <- function(aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
                                  site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
                                  agol_username = "mojn_data") {
-
-  # Import aspen database and aspen site database
-  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username)
-  raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
-
-  # Add site data to list of other data
-  raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
-  # Join site metadata to list of other metadata
-  raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
-
-  raw_data <- fetchagol::cleanData(raw_data)
-
   flattened_data <- list(data = list(),
                          metadata = list())
 
+  # Import aspen database
+  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username)
+
+
+  # Imports optional second database and connects it to main database
+  # For MOJN - there's a master list of sites in a different database
+  if(!is.null(site_url)) {
+    # Import aspen site database
+    raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
+
+    # Add site data to list of other data
+    raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
+    # Join site metadata to list of other metadata
+    raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
+  }
+
+  raw_data <- fetchagol::cleanData(raw_data)
+
+  # Add optional second database to flattened data
+  if(!is.null(site_url)) {
+  flattened_data$data$AllSites <- raw_data$data$AllSites
+  }
+
 
   # Join background site information with other tables
-  flattened_data$data$AllSites <- raw_data$data$AllSites
-  flattened_data$data$SiteVisit <- raw_data$data$SiteVisit
+  flattened_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+    dplyr::left_join(dplyr::select(flattened_data$data$AllSites, dplyr::any_of(c("Site", "Status", "Panel", "Stratum", "Zone_", "Community"))),
+                     by = dplyr::join_by("Site"))
 
   flattened_data$data$Disturbances <- raw_data$data$SiteVisit %>%
     dplyr::mutate(parentglobalid = globalid) %>%
