@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{fetchAndWrangleAspen}
 \alias{fetchAndWrangleAspen}
-\title{Fetch feature service info from AGOL}
+\title{Fetch aspen data from AGOL and do preliminary data wrangling}
 \usage{
 fetchAndWrangleAspen(
   aspen_url =
@@ -13,13 +13,15 @@ fetchAndWrangleAspen(
 )
 }
 \arguments{
-\item{url}{Feature service URL}
+\item{aspen_url}{URL to main AGOL aspen database}
 
-\item{token}{Authentication token (not needed for public layers)}
+\item{site_url}{URL to AGOL database for aspen sites (if applicable)}
+
+\item{agol_username}{Authentication token (not needed for public layers)}
 }
 \value{
-A list
+A list of data frames and metadata
 }
 \description{
-Retrieves metadata from AGOL layers and tables.
+Fetch aspen data from AGOL and do preliminary data wrangling
 }
