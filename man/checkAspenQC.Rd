@@ -2,10 +2,13 @@
 % Please edit documentation in R/aspen_qc.R
 \name{checkAspenQC}
 \alias{checkAspenQC}
-\title{Check that all of the plots have at least one aspen each time they are visited}
+\title{Check that all plots have at least one live aspen each time they are visited}
 \usage{
 checkAspenQC(data = fetchAndWrangleAspen())
 }
+\arguments{
+\item{data}{Aspen dataset to run through QC functions}
+}
 \description{
-Check that all of the plots have at least one aspen each time they are visited
+Check that all plots have at least one live aspen each time they are visited
 }

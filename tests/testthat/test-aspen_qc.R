@@ -5,9 +5,12 @@
   # check that the return type from function is correct
   # make fake data and then test number of rows?? - nah probs not
 
+
+data <- fetchAndWrangleMOJNAspen()
+
 test_that("Test that missingTreeQC() works", {
   # Run function
-  returnData <- missingTreeQC()
+  returnData <- missingTreeQC(data)
 
   # Compare expected and actual column names
   actual_cols <- names(returnData)
@@ -20,7 +23,7 @@ test_that("Test that missingTreeQC() works", {
 
 test_that("Test that treeSpeciesQC() works", {
   # Run function
-  returnData <- treeSpeciesQC()
+  returnData <- treeSpeciesQC(data)
 
   # Compare expected and actual column names
   actual_cols <- names(returnData)
@@ -33,7 +36,7 @@ test_that("Test that treeSpeciesQC() works", {
 
 test_that("Test that unknownSpeciesQC() works", {
   # Run function
-  returnData <- unknownSpeciesQC()
+  returnData <- unknownSpeciesQC(data)
 
   # Compare expected and actual column names
   actual_cols <- names(returnData)
@@ -46,11 +49,11 @@ test_that("Test that unknownSpeciesQC() works", {
 
 test_that("Test that checkAspenQC() works", {
   # Run function
-  returnData <- checkAspenQC()
+  returnData <- checkAspenQC(data)
 
   # Compare expected and actual column names
   actual_cols <- names(returnData)
-  expected_cols <- c("Park", "Site","VisitType", "VisitDate", "SpeciesCode", "Class1", "Class2", "Class3", "Class4", "Class5", "Class6")
+  expected_cols <- c("Park", "Site","VisitType", "VisitDate", "SpeciesCode")
   expect_equal(actual_cols, expected_cols)
 
   # Check that function returns a database
