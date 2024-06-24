@@ -20,26 +20,6 @@ aspen <- aspen::fetchAndWrangleUCBNAspen()
 ```{r}
 # find number of plots in each watershed
 
-# TODO: update this to Allsites tables once not used sites are removed
-
-# aspen$data$AllSites <- aspen$data$AllSites %>%
-#   filter(Site %in% aspen$data$SiteVisit$Site) %>%
-#       # Find Number of plot in each watershed
-#   group_by(Stratum) %>%
-#   mutate(numberOfPlotsInWatershed = n()) %>%
-#   ungroup() %>%
-#   group_by(Community) %>%
-#   # Find number of plots in each community
-#   mutate(numberOfPlotsInCommunity = n()) %>%
-#   ungroup()
-
-# aspen$data$SiteVisit <- aspen$data$SiteVisit %>%
-#   #filter(Site %in% aspen$data$SiteVisit$Site) %>%
-#       # Find Number of plot in each watershed
-#   group_by(Stand) %>%
-#   mutate(numberOfPlotsInStand = n_distinct(Unique_ID)) %>%
-#   ungroup() 
-
 numberOfPlots <- aspen$data$SiteVisit %>%
   group_by(Stand) %>%
   summarise(numberOfPlotsInStand = n_distinct(Unique_ID))
@@ -174,8 +154,6 @@ fig
 
 # this is finding the density for each plot and then averaging it for the communities
 
-
-# TODO: make it so the different plots in the community are aggregated before density is calculated
 aspenDensity2 <- aspen$data$Observations %>%
   # left_join(select(aspen$data$SiteVisit, any_of(c("numberOfPlotsInStand", "globalid"))), by = c("parentglobalid" = "globalid")) %>%
   left_join(select(numberOfPlots, any_of(c("Stand", "numberOfPlotsInStand"))), by = join_by(Stand)) %>%

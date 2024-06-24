@@ -195,8 +195,6 @@ fig
 
 # this is finding the density for each plot and then averaging it for the communities
 
-
-# TODO: make it so the different plots in the community are aggregated before density is calculated
 aspenDensity2 <- aspen$data$Observations %>%
   left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
   # filter for POTR5
@@ -300,41 +298,6 @@ coniferDensityGraph <- coniferDensity %>%
   guides(fill="none")
 
 coniferDensityGraph
-```
-
-
-```{r}
-# # 4 meter radius of plots
-# # area = pi*r^2
-# # density = #/ha
-# 
-# # TODO: should i aggregate all the different types of conifers per plot before graphing?? - probably yea i think so
-# 
-# coniferDensity <- aspen$data$Observations %>%
-#   left_join(select(aspen$data$AllSites, any_of(c("Site", "Community", "numberOfPlotsInCommunity"))), by = join_by(Site)) %>%
-#   # filter for POTR5
-#   filter(SpeciesCode != "POTR5" & SpeciesCode != "BEUC2") %>%
-#   # Find total live trees in each row
-#   mutate(treeSum = Class1+Class2+Class3+Class4+Class5) %>%
-#   group_by(Site, Community) %>%
-#   summarise(totalTrees = sum(treeSum)) %>%
-#   # Find density for each plot
-#   mutate(density = (totalTrees)/((pi * 4^2)/10000))
-# 
-# 
-# coniferDensityGraph <- coniferDensity %>%
-#   ggplot(aes(x= Community, y = density, fill = Community)) +
-#   geom_violin() +
-#   #geom_col() +
-#   theme_minimal() +
-#   labs(title = "Conifer Density",
-#        x = "Community", y = "Density (#/ha)") + 
-#   theme(plot.title = element_text(hjust = 0.5)) +
-#   theme(axis.text.x = element_text(size = 6, angle = 315, hjust = 0)) +
-#   scale_fill_light() + 
-#   guides(fill="none")
-# 
-# coniferDensityGraph
 ```
 
 #### Density of Aspen vs Conifers

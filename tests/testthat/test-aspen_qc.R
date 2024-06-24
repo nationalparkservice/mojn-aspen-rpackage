@@ -6,7 +6,7 @@
   # make fake data and then test number of rows?? - nah probs not
 
 
-data <- fetchAndWrangleMOJNAspen()
+data <- loadAndWrangleMOJNAspen()
 
 test_that("Test that missingTreeQC() works", {
   # Run function

@@ -35,8 +35,8 @@ keyring::key_get(service = "AGOL", username = "USERNAME")
 
 A short summary of what this package contains. For more information see function documentation.
 
-- fetchAndWrangleMOJNAspen(): load MOJN aspen data from AGOL into R and perform some basic data wrangling
-- fetchAndWrangleUCBNAspen(): load UCBN aspen data from AGOL into R and perform some basic data wrangling
+- loadAndWrangleMOJNAspen(): load MOJN aspen data from AGOL into R and perform some basic data wrangling
+- loadAndWrangleUCBNAspen(): load UCBN aspen data from AGOL into R and perform some basic data wrangling
 - writeAspen(): write aspen data and metadata to CSVs
 
 In addition to these functions the aspen package has some quality control functions, a quality control script, and a visualization script. To learn more about the functions see package documentation. You can find the scripts in the script folder of the [GitHub repo](https://github.com/nationalparkservice/mojn-aspen-rpackage) or if you cloned the GitHub repo to your desktop you can open the files from there. Download, open, and then run the .qmd file to see the results. 

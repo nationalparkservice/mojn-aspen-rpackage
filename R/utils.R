@@ -15,7 +15,7 @@ pkg_globals <- new.env(parent = emptyenv())
 #' @export
 
 # TODO: add variables that were joined to data tables to each metadata table
-fetchAndWrangleMOJNAspen <- function(
+loadAndWrangleMOJNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
                                  site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
                                  agol_username = "mojn_data") {
@@ -41,7 +41,6 @@ fetchAndWrangleMOJNAspen <- function(
   raw_data <- fetchagol::cleanData(raw_data)
 
 
-  # TODO Figure out what to do with metadata, in iu its left empty/fix metadata
   flattened_data$metadata <- raw_data$metadata
 
   # Add optional second database to flattened data
@@ -95,7 +94,7 @@ fetchAndWrangleMOJNAspen <- function(
 #' @return A list of data frames and metadata
 #' @export
 
-fetchAndWrangleUCBNAspen <- function(
+loadAndWrangleUCBNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/service_4d6343e9204142928351c52c6f1362c5/FeatureServer",
                                  site_url =  NULL,
                                  agol_username = "mojn_data") {
@@ -124,7 +123,6 @@ fetchAndWrangleUCBNAspen <- function(
   if(!is.null(site_url)) {
     flattened_data$data$AllSites <- raw_data$data$AllSites
 
-    # TODO Figure out what to do with metadata, in iu its left empty/fix metadata
     flattened_data$metadata <- raw_data$metadata
 
     # Join background site information with other tables and add background information metadata to tables it was added to
