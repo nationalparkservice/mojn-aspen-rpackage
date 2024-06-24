@@ -15,7 +15,6 @@ pkg_globals <- new.env(parent = emptyenv())
 #' @export
 
 # TODO: add variables that were joined to data tables to each metadata table
-# TODO should data be loaded from inside the function like now or input as a variable
 fetchAndWrangleMOJNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
                                  site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
@@ -96,8 +95,6 @@ fetchAndWrangleMOJNAspen <- function(
 #' @return A list of data frames and metadata
 #' @export
 
-
-# TODO fix this
 fetchAndWrangleUCBNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/service_4d6343e9204142928351c52c6f1362c5/FeatureServer",
                                  site_url =  NULL,
