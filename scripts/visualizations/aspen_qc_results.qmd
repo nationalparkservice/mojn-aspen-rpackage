@@ -1,0 +1,63 @@
+---
+title: "Aspen Quality Control"
+format: 
+  html:
+    embed-resources: true
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(aspen)
+```
+
+
+##### Check Trees
+Check that there is at least one tree for every observation entry and flag entries with more than 250 trees
+
+```{r}
+if(nrow(aspen:::missingTreeQC()) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::missingTreeQC())
+}
+```
+
+
+##### Check for Missing Species
+Check that no entries in the observation table have a SpeciesCode that is NA or missing
+
+```{r}
+if(nrow(aspen:::treeSpeciesQC()) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::treeSpeciesQC())
+}
+```
+
+
+##### Check Unknown Trees
+Check that unknown species entries do not have any live trees
+
+```{r}
+if(nrow(aspen:::unknownSpeciesQC()) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::unknownSpeciesQC())
+}
+```
+
+
+##### Check for Aspens
+Check that all of the plots have at least one aspen each time they are visited
+
+```{r}
+if(nrow(aspen:::checkAspenQC()) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::checkAspenQC())
+}
+```

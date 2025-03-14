@@ -1,0 +1,78 @@
+---
+title: "QC Results"
+format: 
+  html:
+    embed-resources: true
+execute: 
+  echo: false
+---
+
+
+```{r, message=FALSE, echo=FALSE, include=FALSE}
+library(tidyverse)
+library(aspen)
+
+# Import Data
+# 
+# data_dir = "data"
+# 
+# # Extract the path of the first Access database in the data folder folder of the project directory
+# # Or the database path can be input manually
+# #database_dir <- common::file.find(here::here("data"), "*.accdb", up = 0)[1]
+# 
+# fiveneedlepine::loadPine(database_dir)
+aspen <- fetchAndWrangleUCBNAspen()
+```
+
+# Aspen QC
+
+##### Check that there is at least one tree for every observation entry and flag entries with more than 250 trees
+```{r}
+if(nrow(aspen:::missingTreeUCBNQC(aspen)) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::missingTreeUCBNQC(aspen))
+}
+```
+
+
+
+##### Check that no entries in the observation table have a SpeciesCode that is NA or missing
+```{r}
+if(nrow(aspen:::treeSpeciesUCBNQC(aspen)) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::treeSpeciesUCBNQC(aspen))
+}
+```
+
+
+##### Check that unknown species entries do not have any live trees
+```{r}
+if(nrow(aspen:::unknownSpeciesUCBNQC(aspen)) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::unknownSpeciesUCBNQC(aspen))
+}
+```
+
+
+##### Check that all plots have at least one live aspen for each visit
+```{r}
+if(nrow(aspen:::checkAspenUCBNQC(aspen)) == 0){
+  cat('No errors')
+} else{
+  rmarkdown::paged_table(aspen:::checkAspenUCBNQC(aspen))
+}
+```
+
+
+##### Flag large changes in number of tree between years
+```{r}
+# if(nrow(fiveneedlepine:::treeChangeUCBNQC(aspen)) == 0){
+#   cat('No errors')
+# } else{
+#   rmarkdown::paged_table(fiveneedlepine:::treeChangeUCBNQC(aspen))
+# }
+```
+
