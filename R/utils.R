@@ -35,6 +35,49 @@ pkg_globals <- new.env(parent = emptyenv())
   invisible(raw_data)
 }
 
+#' Wrangle optional sites table
+#'
+#' @inheritParams .update_metadata_fields
+#'
+#' @return raw_data with updated sites table and updated metadata fields
+wrangleSites <- function(raw_site_data) {
+  raw_site_data$metadata$`MOJN Aspen Sites Master`$table_name <- "AllSites"
+
+  # Remove trailing underscores from column names
+  names(raw_site_data$data$`MOJN Aspen Sites Master`) <- sub("_$", "", names(raw_site_data$data$`MOJN Aspen Sites Master`))
+  names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields) <- sub("_$", "", names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields))
+
+  raw_site_data$data$`MOJN Aspen Sites Master` <- raw_site_data$data$`MOJN Aspen Sites Master` %>%
+    dplyr::mutate(
+      # Expand codes to differentiate between NA char and NA
+      Shift = dplyr::case_when(
+        Shift == "NA" ~ "Not Shifted",
+        Shift == "S" ~ "South",
+        Shift == "N" ~ "North",
+        Shift == "E" ~ "East",
+        Shift == "W" ~ "West",
+        TRUE ~ Shift),
+      # Format UTM coordinates
+      VerbatimCoordinates = dplyr::case_when(
+        is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
+        Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
+        Park == "PARA" ~ paste0("10N ", Xcoord, "m E ", Ycoord, "m N")),
+      # Add geographic info columns
+      VerbatimCoordinateSystem = "UTM",
+      VerbatimSRS = "EPSG:4269", # code for NAD 83
+      GeodeticDatum = "EPSG:4326" # code for WGS 84
+    ) %>%
+    dplyr::relocate(VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
+    # Remove unnecessary columns
+    dplyr::select(-"SiteDescription", -"LegacyFrame", -"NavigationNotes", -"Xcoord", -"Ycoord")
+
+  # Add new columns to metadata fields
+  raw_site_data <- .update_metadata_fields(raw_site_data)
+
+  invisible(raw_site_data)
+}
+
+
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
 #' @param aspen_url URL to main AGOL aspen database
