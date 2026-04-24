@@ -37,7 +37,7 @@ pkg_globals <- new.env(parent = emptyenv())
 
 #' Wrangle optional sites table
 #'
-#' @inheritParams .update_metadata_fields
+#' @param raw_site_data Object returned from using fetchagol::fetchRawData to query MOJN_Aspen_Sites_Master
 #'
 #' @return raw_data with updated sites table and updated metadata fields
 wrangleSites <- function(raw_site_data) {
@@ -61,13 +61,14 @@ wrangleSites <- function(raw_site_data) {
       VerbatimCoordinates = dplyr::case_when(
         is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
         Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
-        Park == "PARA" ~ paste0("10N ", Xcoord, "m E ", Ycoord, "m N")),
+        Park == "PARA" ~ paste0("12N ", Xcoord, "m E ", Ycoord, "m N")),
       # Add geographic info columns
       VerbatimCoordinateSystem = "UTM",
       VerbatimSRS = "EPSG:4269", # code for NAD 83
-      GeodeticDatum = "EPSG:4326" # code for WGS 84
+      GeodeticDatum = "EPSG:4326" # code for WGS 84 (for lat/lon coordinates)
     ) %>%
     dplyr::relocate(VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
+    dplyr::relocate(Community, Stand_Height, .after = Zone) %>%
     # Remove unnecessary columns
     dplyr::select(-"SiteDescription", -"LegacyFrame", -"NavigationNotes", -"Xcoord", -"Ycoord")
 
