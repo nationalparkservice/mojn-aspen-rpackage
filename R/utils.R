@@ -6,7 +6,7 @@ pkg_globals <- new.env(parent = emptyenv())
 
 #' Update metadata fields to match column names in corresponding table
 #'
-#' @param raw_data The raw_data object to update
+#' @param raw_data The raw_data object as returned from fetchagol::fetchRawData to update
 #'
 #' @return raw_data with updated metadata fields
 .update_metadata_fields <- function(raw_data) {
