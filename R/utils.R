@@ -6,7 +6,7 @@ pkg_globals <- new.env(parent = emptyenv())
 
 #' Update metadata fields to match column names in corresponding table
 #'
-#' @param raw_data The raw_data object as returned from fetchagol::fetchRawData to update
+#' @param raw_data The raw_data object as returned by fetchagol::fetchRawData
 #'
 #' @return raw_data with updated metadata fields
 .update_metadata_fields <- function(raw_data) {
@@ -37,10 +37,10 @@ pkg_globals <- new.env(parent = emptyenv())
 
 #' Wrangle optional sites table
 #'
-#' @param raw_site_data Object returned from using fetchagol::fetchRawData to query MOJN_Aspen_Sites_Master
+#' @param raw_site_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master
 #'
-#' @return raw_data with updated sites table and updated metadata fields
-wrangleSites <- function(raw_site_data) {
+#' @return raw_site_data with updated sites table and metadata fields
+wrangleAllSites <- function(raw_site_data) {
   raw_site_data$metadata$`MOJN Aspen Sites Master`$table_name <- "AllSites"
 
   # Remove trailing underscores from column names
@@ -77,7 +77,6 @@ wrangleSites <- function(raw_site_data) {
 
   invisible(raw_site_data)
 }
-
 
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
