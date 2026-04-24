@@ -155,7 +155,7 @@ wrangleObservations <- function(raw_data) {
                         names_to = "SizeClass",
                         values_to = "TreeCount") %>%
     # Add class descriptions
-    dplyr::mutate(SizeClassDescriptions = dplyr::case_when(
+    dplyr::mutate(SizeClassDescription = dplyr::case_when(
       SizeClass == "Class1" ~ "Suckers or seedlings less than 46 cm tall",
       SizeClass == "Class2" ~ "Suckers or seedlings l46 cm to 152 cm tall",
       SizeClass == "Class3" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
