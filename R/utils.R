@@ -134,6 +134,42 @@ wrangleDisturbances <- function(raw_data) {
   invisible(raw_data)
 }
 
+#' Wrangle observations table
+#'
+#' @inheritParams .update_metadata_fields
+#'
+#' @return raw_data with updated observations table and metadata fields
+wrangleObservations <- function(raw_data) {
+  # Join site visit info to observations tbl
+  raw_data$data$Observations <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, dplyr::any_of("Community")) %>%
+    dplyr::right_join(raw_data$data$Observations,
+                      by = dplyr::join_by("parentglobalid")) %>%
+    # Expand species codes to show full scientific names
+    dplyr::left_join(raw_data$metadata$Observations$fields$SpeciesCode$lookup$lookup_df %>%
+                       dplyr::mutate(ScientificName = gsub("\\s*\\([^)]*\\)", "", label)),
+                     by = join_by(SpeciesCode == name)) %>%
+    dplyr::relocate(ScientificName, .after = SpeciesCode) %>%
+    # Pivot to tidy format
+    tidyr::pivot_longer(cols = dplyr::contains("Class"),
+                        names_to = "SizeClass",
+                        values_to = "TreeCount") %>%
+    # Add class descriptions
+    dplyr::mutate(SizeClassDescriptions = dplyr::case_when(
+      SizeClass == "Class1" ~ "Suckers or seedlings less than 46 cm tall",
+      SizeClass == "Class2" ~ "Suckers or seedlings l46 cm to 152 cm tall",
+      SizeClass == "Class3" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+      SizeClass == "Class4" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+      SizeClass == "Class5" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+      SizeClass == "Class6" ~ "Dead stems greater than 2.5 cm in dbh",
+    )) %>%
+    dplyr::select(-parentglobalid, -label)
+
+  # Add new columns to metadata fields
+  raw_data <- .update_metadata_fields(raw_data)
+
+  invisible(raw_data)
+}
 
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
