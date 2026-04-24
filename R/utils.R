@@ -171,6 +171,31 @@ wrangleObservations <- function(raw_data) {
   invisible(raw_data)
 }
 
+#' Wrangle pests table
+#'
+#' @inheritParams .update_metadata_fields
+#'
+#' @return raw_data with updated pests table and metadata fields
+wranglePests <- function(raw_data) {
+  # Join site visit and species info from observations tbl to pests
+  raw_data$data$Pests <- raw_data$data$Observations %>%
+    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, dplyr::any_of("Community"), SpeciesCode, ScientificName) %>%
+    dplyr::distinct() %>%
+    dplyr::right_join(raw_data$data$Pests,
+                      by = join_by("parentglobalid")) %>%
+    dplyr::rename(PestCodes = Pest) %>%
+    # Expand out shortened pest names
+    dplyr::left_join(raw_data$metadata$Pests$fields$Pest$lookup$lookup_df %>%
+                       dplyr::select(PestCodes = name, Pest = label),
+                     by = join_by(PestCodes)) %>%
+    dplyr::select(-parentglobalid, -globalid, -PestCodes)
+
+  # Add new columns to metadata fields
+  raw_data <- .update_metadata_fields(raw_data)
+
+  invisible(raw_data)
+}
+
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
 #' @param aspen_url URL to main AGOL aspen database
