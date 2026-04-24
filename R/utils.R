@@ -41,17 +41,17 @@ pkg_globals <- new.env(parent = emptyenv())
 #'
 #' @return raw_site_data with updated sites table and metadata fields
 wrangleAllSites <- function(raw_site_data) {
-   raw_site_data$metadata$`MOJN Aspen Sites Master`$table_name <- "AllSites"
+  raw_site_data$metadata$`MOJN Aspen Sites Master`$table_name <- "AllSites"
 
-    # Remove trailing underscores from column names
-    names(raw_site_data$data$`MOJN Aspen Sites Master`) <- sub("_$", "", names(raw_site_data$data$`MOJN Aspen Sites Master`))
-    names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields) <- sub("_$", "", names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields))
+  # Remove trailing underscores from column names
+  names(raw_site_data$data$`MOJN Aspen Sites Master`) <- sub("_$", "", names(raw_site_data$data$`MOJN Aspen Sites Master`))
+  names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields) <- sub("_$", "", names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields))
 
-    raw_site_data$data$`MOJN Aspen Sites Master` <- raw_site_data$data$`MOJN Aspen Sites Master` %>%
-      dplyr::mutate(
-        # Expand codes to differentiate between NA char and NA
-        Shift = dplyr::case_when(
-          Shift == "NA" ~ "Not Shifted",
+  raw_site_data$data$`MOJN Aspen Sites Master` <- raw_site_data$data$`MOJN Aspen Sites Master` %>%
+    dplyr::mutate(
+      # Expand codes to differentiate between NA char and NA
+      Shift = dplyr::case_when(
+        Shift == "NA" ~ "Not Shifted",
         Shift == "S" ~ "South",
         Shift == "N" ~ "North",
         Shift == "E" ~ "East",
@@ -72,10 +72,10 @@ wrangleAllSites <- function(raw_site_data) {
       # Remove unnecessary columns
       dplyr::select(-dplyr::any_of(c("SiteDescription", "LegacyFrame", "NavigationNotes","Xcoord", "Ycoord", "GlobalID")))
 
-    # Add new columns to metadata fields
-    raw_site_data <- .update_metadata_fields(raw_site_data)
+  # Add new columns to metadata fields
+  raw_site_data <- .update_metadata_fields(raw_site_data)
 
-    invisible(raw_site_data)
+  invisible(raw_site_data)
 }
 
 #' Wrangle site visit table
