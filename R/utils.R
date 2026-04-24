@@ -78,6 +78,38 @@ wrangleAllSites <- function(raw_site_data) {
   invisible(raw_site_data)
 }
 
+#' Wrangle site visit table
+#'
+#' @inheritParams .update_metadata_fields
+#'
+#' @return raw_data with updated site visit table and metadata fields
+wrangleSiteVisit <- function(raw_data) {
+  raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+    # Expand protocol version
+    dplyr::left_join(raw_data$metadata$SiteVisit$fields$ProtocolVersion$lookup$lookup_df %>%
+                       dplyr::select(ProtocolVersion = name, label),
+                     by = join_by(ProtocolVersion)) %>%
+    dplyr::mutate(VisitDate = as.Date(VisitDate),
+                  ProtocolVersion = label) %>%
+    dplyr::relocate(Observer:Recorder, ProtocolVersion, FieldSeason, .after = VisitDate) %>%
+    dplyr::select(-StartTime, -EndTime, -label, -parentglobalid)
+
+  # If sites tbl is available, join on sites info
+  if(!is.null(raw_data$data$AllSites)) {
+    raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+      dplyr::left_join(dplyr::select(raw_data$data$AllSites,
+                                     dplyr::any_of(c("Site", "Status", "Stratum", "Zone", "Community"))),
+                       by = dplyr::join_by(Site)) %>%
+      dplyr::relocate(Stratum:Zone, .after = Site) %>%
+      dplyr::relocate(VisitNotes, .after = dplyr::last_col())
+  }
+
+  # Add new columns to metadata fields
+  raw_data <- .update_metadata_fields(raw_data)
+
+  invisible(raw_data)
+}
+
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
 #' @param aspen_url URL to main AGOL aspen database
