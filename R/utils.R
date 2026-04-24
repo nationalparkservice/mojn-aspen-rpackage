@@ -110,6 +110,31 @@ wrangleSiteVisit <- function(raw_data) {
   invisible(raw_data)
 }
 
+#' Wrangle disturbances table
+#'
+#' @inheritParams .update_metadata_fields
+#'
+#' @return raw_data with updated disturbances table and metadata fields
+wrangleDisturbances <- function(raw_data) {
+  # Join site visit info to disturbance tbl
+  raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, dplyr::any_of("Community")) %>%
+    dplyr::right_join(raw_data$data$Disturbances,
+                      by = dplyr::join_by("parentglobalid")) %>%
+    dplyr::rename(DisturbanceCode = Disturbance) %>%
+    # Expand disturbance codes
+    dplyr::left_join(raw_data$metadata$Disturbances$fields$Disturbance$lookup$lookup_df %>%
+                       dplyr::select(DisturbanceCode = name, Disturbance = label),
+                     by = join_by(DisturbanceCode)) %>%
+    dplyr::select(-parentglobalid, -globalid, -DisturbanceCode)
+
+  # Add new columns to metadata fields
+  raw_data <- .update_metadata_fields(raw_data)
+
+  invisible(raw_data)
+}
+
+
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
 #' @param aspen_url URL to main AGOL aspen database
