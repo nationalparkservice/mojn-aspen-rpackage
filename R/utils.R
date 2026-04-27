@@ -40,9 +40,7 @@ pkg_globals <- new.env(parent = emptyenv())
 #' @param raw_site_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master
 #'
 #' @return raw_site_data with updated sites table and metadata fields
-wrangleAllSites <- function(raw_site_data) {
-  raw_site_data$metadata$`MOJN Aspen Sites Master`$table_name <- "AllSites"
-
+wrangleSites <- function(raw_site_data) {
   # Remove trailing underscores from column names
   names(raw_site_data$data$`MOJN Aspen Sites Master`) <- sub("_$", "", names(raw_site_data$data$`MOJN Aspen Sites Master`))
   names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields) <- sub("_$", "", names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields))
@@ -57,7 +55,7 @@ wrangleAllSites <- function(raw_site_data) {
         Shift == "E" ~ "East",
         Shift == "W" ~ "West",
         TRUE ~ Shift),
-      # Format UTM coordinates
+      # Format UTM coordinates using DWC column names
       VerbatimCoordinates = dplyr::case_when(
         is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
         Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
@@ -67,8 +65,8 @@ wrangleAllSites <- function(raw_site_data) {
       VerbatimSRS = "EPSG:4269", # code for NAD 83
       GeodeticDatum = "EPSG:4326" # code for WGS 84
       ) %>%
-      dplyr::relocate(VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
-      dplyr::relocate(Community, Stand_Height, .after = Zone) %>%
+      dplyr::relocate(Shift, VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
+      dplyr::relocate(Stand_Height, .after = Zone) %>%
       # Remove unnecessary columns
       dplyr::select(-dplyr::any_of(c("SiteDescription", "LegacyFrame", "NavigationNotes","Xcoord", "Ycoord", "GlobalID")))
 
@@ -215,7 +213,7 @@ loadAndWrangleMOJNAspen <- function(
   # If sites url is provided, load and wrangle sites data
   if(!is.null(site_url)) {
     raw_site_data <- fetchagol::fetchRawData(site_url, agol_username) %>%
-      wrangleAllSites()
+      wrangleSites()
     # Add to raw_data
     raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
     raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
