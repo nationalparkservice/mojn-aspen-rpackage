@@ -226,20 +226,19 @@ loadAndWrangleMOJNAspen <- function(
   raw_data <- fetchagol::cleanData(raw_data, cols_to_remove = cols_to_remove)
 
   # Wrangle other tables
-  wrangled_data <- raw_data %>%
+  aspen_data <- raw_data %>%
     wrangleSiteVisit() %>%
     wrangleDisturbances() %>%
     wrangleObservations() %>%
     wranglePests()
 
   # Remove ID cols that were retained for joins from data and metadata
-  wrangled_data$data$SiteVisit["globalid"] <- NULL
-  wrangled_data$data$Observations["globalid"] <- NULL
+  for (tbl in c("SiteVisit", "Observations")) {
+    aspen_data$data[[tbl]]["globalid"] <- NULL
+    aspen_data$metadata[[tbl]]$fields["globalid"] <- NULL
+  }
 
-  wrangled_data$metadata$SiteVisit$fields["globalid"] <- NULL
-  wrangled_data$metadata$Observations$fields["globalid"] <- NULL
-
-  invisible(wrangled_data)
+  invisible(aspen_data)
 }
 
 #' Fetch aspen data from AGOL and do preliminary data wrangling
