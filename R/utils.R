@@ -241,6 +241,41 @@ loadAndWrangleMOJNAspen <- function(
   invisible(aspen_data)
 }
 
+#' Format aspen data for data package publication
+#'
+#' @param aspen_data The aspen_data object as returned by loadAndWrangleMOJNAspen
+#'
+#' @return aspen_data with data package formatting
+packageMOJNAspen <- function(aspen_data) {
+  # add input structure check?
+
+  # Apply changes to all tables
+  aspen_data$data <- lapply(aspen_data$data, function(tbl) {
+    tbl %>% janitor::clean_names(case = "lower_camel") %>%
+      dplyr::rename(unitCode = park,   # CSO standard naming
+                    siteCode = site,   # CSO standard naming
+                    decimalLatitude = dplyr::any_of("lat"), # DWC name
+                    decimalLongitude = dplyr::any_of("lon"), # DWC name
+                    GRTSAssessment = dplyr::any_of("grtsAssessment"),
+                    GRTSOrder = dplyr::any_of("grtsOrder"),
+                    verbatimSRS = dplyr::any_of("verbatimSrs") # DWC name
+      ) %>%
+      dplyr::mutate(
+        # Expand park codes
+        unitName = dplyr::case_when(unitCode == "GRBA" ~ "Great Basin National Park",
+                                    unitCode == "PARA" ~ "Parashant National Monument"),
+        # Add DWC columns to every table
+        type = "Event",
+        basisOfRecord = "HumanObservation") %>%
+      dplyr::relocate(unitName, .after = unitCode)
+  })
+
+  # Update basisOfRecord value for SiteVisit tbl only (not human obs)
+  aspen_data$data$SiteVisit$basisOfRecord <- "Event"
+
+  invisible(aspen_data)
+}
+
 #' Fetch aspen data from AGOL and do preliminary data wrangling
 #'
 #' @param aspen_url URL to main AGOL aspen database
