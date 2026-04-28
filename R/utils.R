@@ -15,22 +15,21 @@ pkg_globals <- new.env(parent = emptyenv())
     fields <- raw_data$metadata[[tbl]]$fields
 
     # Identify columns missing in metadata
-    add_cols <- setdiff(cols, names(fields))
+    missing_cols <- setdiff(cols, names(fields))
 
     # Create minimal metadata for missing columns
-    if (length(add_cols)) {
-      fields[add_cols] <- stats::setNames(
-        lapply(add_cols, function(colname) {
+    if (length(missing_cols)) {
+      fields[missing_cols] <- stats::setNames(
+        lapply(missing_cols, function(colname) {
           col_class <- class(raw_data$data[[tbl]][[colname]])
           list(description = colname,
                attributes  = list(class = col_class))
         }),
-        add_cols
+        missing_cols
       )
     }
     # Reorder metadata fields to match the table's column order
-    raw_data$metadata[[tbl]]$fields <-
-      if (length(cols)) fields[cols] else list()
+    raw_data$metadata[[tbl]]$fields <- fields[cols]
   }
   invisible(raw_data)
 }
