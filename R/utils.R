@@ -89,17 +89,20 @@ wrangleSiteVisit <- function(raw_data) {
                      by = join_by(ProtocolVersion)) %>%
     dplyr::mutate(VisitDate = as.Date(VisitDate),
                   ProtocolVersion = label) %>%
-    dplyr::relocate(Observer:Recorder, ProtocolVersion, FieldSeason, .after = VisitDate) %>%
+    dplyr::relocate(VisitType, Observer, Recorder, ProtocolVersion, FieldSeason, .after = VisitDate) %>%
     dplyr::select(-StartTime, -EndTime, -label, -parentglobalid)
 
   # If sites tbl is available, join on sites info
   if(!is.null(raw_data$data$AllSites)) {
     raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
-      dplyr::left_join(dplyr::select(raw_data$data$AllSites,
-                                     dplyr::any_of(c("Site", "Status", "Stratum", "Zone", "Community"))),
-                       by = dplyr::join_by(Site)) %>%
-      dplyr::relocate(Stratum:Zone, .after = Site) %>%
-      dplyr::relocate(VisitNotes, .after = dplyr::last_col())
+      dplyr::left_join(raw_data$data$AllSites,
+                       by = dplyr::join_by(Park, Site)) %>%
+      dplyr::relocate(Stratum, Zone, .after = Site) %>%
+      dplyr::relocate(Evaluation:GRTSAssessment, ProtocolVersion, Community, VisitNotes, .after = dplyr::last_col())
+
+    # Remove sites table from raw_data
+    raw_data$data$AllSites <- NULL
+    raw_data$metadata$AllSites <- NULL
   }
 
   # Add new columns to metadata fields
