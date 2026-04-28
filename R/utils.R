@@ -105,7 +105,7 @@ wrangleSiteVisit <- function(raw_data) {
     raw_data$metadata$AllSites <- NULL
   }
 
-  # Add new columns to metadata fields
+  # Update col names in metadata fields
   raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
@@ -129,7 +129,7 @@ wrangleDisturbances <- function(raw_data) {
                      by = join_by(DisturbanceCode)) %>%
     dplyr::select(-parentglobalid, -globalid, -DisturbanceCode)
 
-  # Add new columns to metadata fields
+  # Update col names in metadata fields
   raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
@@ -166,7 +166,10 @@ wrangleObservations <- function(raw_data) {
     )) %>%
     dplyr::select(-parentglobalid, -label)
 
-  # Add new columns to metadata fields
+  # Remove ID col from SiteVisit tbl, not needed after join
+  raw_data$data$SiteVisit["globalid"] <- NULL
+
+  # Update col names in metadata fields
   raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
@@ -191,7 +194,10 @@ wranglePests <- function(raw_data) {
                      by = join_by(PestCodes)) %>%
     dplyr::select(-parentglobalid, -globalid, -PestCodes)
 
-  # Add new columns to metadata fields
+  # Remove ID col from Observations tbl, not needed after join
+  raw_data$data$Observations["globalid"] <- NULL
+
+  # Update col names in metadata fields
   raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
@@ -226,18 +232,12 @@ loadAndWrangleMOJNAspen <- function(
   cols_to_remove <- grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)
   raw_data <- fetchagol::cleanData(raw_data, cols_to_remove = cols_to_remove)
 
-  # Wrangle other tables
+  # Wrangle db tables
   aspen_data <- raw_data %>%
     wrangleSiteVisit() %>%
     wrangleDisturbances() %>%
     wrangleObservations() %>%
     wranglePests()
-
-  # Remove ID cols that were retained for joins from data and metadata
-  for (tbl in c("SiteVisit", "Observations")) {
-    aspen_data$data[[tbl]]["globalid"] <- NULL
-    aspen_data$metadata[[tbl]]$fields["globalid"] <- NULL
-  }
 
   invisible(aspen_data)
 }
