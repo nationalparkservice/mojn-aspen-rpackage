@@ -40,11 +40,9 @@ pkg_globals <- new.env(parent = emptyenv())
 #'
 #' @return raw_site_data with updated sites table and metadata fields
 wrangleSites <- function(raw_site_data) {
-  # Remove trailing underscores from column names
-  names(raw_site_data$data$`MOJN Aspen Sites Master`) <- sub("_$", "", names(raw_site_data$data$`MOJN Aspen Sites Master`))
-  names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields) <- sub("_$", "", names(raw_site_data$metadata$`MOJN Aspen Sites Master`$fields))
-
   raw_site_data$data$`MOJN Aspen Sites Master` <- raw_site_data$data$`MOJN Aspen Sites Master` %>%
+    # Remove trailing underscores from column names
+    dplyr::rename_with(~ sub("_$", "", .x)) %>%
     dplyr::mutate(
       # Expand codes to differentiate between NA char and NA
       Shift = dplyr::case_when(
@@ -68,9 +66,6 @@ wrangleSites <- function(raw_site_data) {
       dplyr::relocate(Stand_Height, .after = Zone) %>%
       # Remove unnecessary columns
       dplyr::select(-dplyr::any_of(c("SiteDescription", "LegacyFrame", "NavigationNotes","Xcoord", "Ycoord", "GlobalID")))
-
-  # Add new columns to metadata fields
-  raw_site_data <- .update_metadata_fields(raw_site_data)
 
   invisible(raw_site_data)
 }
