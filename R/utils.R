@@ -247,33 +247,64 @@ loadAndWrangleMOJNAspen <- function(
 #'
 #' @return aspen_data with data package formatting
 packageMOJNAspen <- function(aspen_data) {
-  # add input structure check?
+  # Add structure check?
+  tbl_names <- names(aspen_data$data)
 
-  # Apply changes to all tables
-  aspen_data$data <- lapply(aspen_data$data, function(tbl) {
-    tbl %>% janitor::clean_names(case = "lower_camel") %>%
-      dplyr::rename(unitCode = park,   # CSO standard naming
-                    siteCode = site,   # CSO standard naming
-                    decimalLatitude = dplyr::any_of("lat"), # DWC name
-                    decimalLongitude = dplyr::any_of("lon"), # DWC name
-                    GRTSAssessment = dplyr::any_of("grtsAssessment"),
-                    GRTSOrder = dplyr::any_of("grtsOrder"),
-                    verbatimSRS = dplyr::any_of("verbatimSrs") # DWC name
-      ) %>%
+  # Wrangling for all tbls
+  aspen_data$data <- lapply(tbl_names, function(nm) {
+    tbl <- aspen_data$data[[nm]]
+
+    tbl <- tbl %>%
+      janitor::clean_names(case = "lower_camel") %>%
+      dplyr::rename(unitCode = park, # CSO standard
+                    siteID = site, # CSO standard
+                    eventDate = visitDate # DWC name
+                    ) %>%
       dplyr::mutate(
-        # Expand park codes
         unitName = dplyr::case_when(unitCode == "GRBA" ~ "Great Basin National Park",
-                                    unitCode == "PARA" ~ "Parashant National Monument"),
-        # Add DWC columns to every table
-        type = "Event",
-        basisOfRecord = "HumanObservation") %>%
+                                    unitCode == "PARA" ~ "Grand Canyon-Parashant National Monument",
+                                    TRUE ~ NA_character_),
+        type = "Event", # DWC column
+        basisOfRecord = "HumanObservation" # DWC column
+        ) %>%
       dplyr::relocate(unitName, .after = unitCode)
+
+    # Update taxonomy
+    if("scientificName" %in% names(tbl)) {
+      tbl <- tbl %>%
+        dplyr::rename(verbatimIdentification = scientificName) %>%
+        dplyr::mutate(scientificName = dplyr::na_if(verbatimIdentification, "Unknown")) %>%
+        QCkit::get_taxon_rank("scientificName") %>%
+        dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
+
+      # Hard code temporary fixes
+      tbl$scientificName[tbl$scientificName == "Cercocarpus ledifollius"] <- "Cercocarpus ledifolius"
+      tbl$scientificName[tbl$scientificName == "Pinus longeava"] <- "Pinus longaeva"
+    }
+
+    # Update observations tbl
+    if(nm == "Observations") {
+      tbl <- tbl %>%
+        dplyr::rename(individualCount = treeCount)  # DWC name
+    }
+
+    # Update site visit tbl
+    if(nm == "SiteVisit") {
+      tbl <- tbl %>%
+        dplyr::rename(verbatimSRS = verbatimSrs, # DWC name
+                      decimalLatitude = lat, # DWC name
+                      decimalLongitude = long, # DWC name
+                      GRTSAssessment = grtsAssessment,
+                      elevationInMeters = elevation, # Add unit to col name
+                      slopeInPercent = slope, # Add unit to col name
+                      aspectInDegrees = aspect, # Add unit to col name
+                      GRTSOrder = grtsOrder) %>%
+        dplyr::mutate(basisOfRecord = "Event")
+    }
+    return(tbl)
   })
-
-  # Update basisOfRecord value for SiteVisit tbl only (not human obs)
-  aspen_data$data$SiteVisit$basisOfRecord <- "Event"
-
-  invisible(aspen_data)
+  names(aspen_data$data) <- tbl_names
+  return(aspen_data)
 }
 
 #' Fetch aspen data from AGOL and do preliminary data wrangling
