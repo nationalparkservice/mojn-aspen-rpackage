@@ -127,14 +127,14 @@ wrangleDisturbances <- function(raw_data) {
 wrangleObservations <- function(raw_data) {
   # Join site visit info to observations tbl
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, dplyr::any_of("Community")) %>%
+    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitType, VisitDate, Community) %>%
     dplyr::right_join(raw_data$data$Observations,
                       by = dplyr::join_by("parentglobalid")) %>%
     # Expand species codes to show full scientific names
     dplyr::left_join(raw_data$metadata$Observations$fields$SpeciesCode$lookup$lookup_df %>%
-                       dplyr::mutate(ScientificName = gsub("\\s*\\([^)]*\\)", "", label)),
+                       dplyr::mutate(SpeciescName = gsub("\\s*\\([^)]*\\)", "", label)),
                      by = join_by(SpeciesCode == name)) %>%
-    dplyr::relocate(ScientificName, .after = SpeciesCode) %>%
+    dplyr::relocate(SpeciesName, .after = SpeciesCode) %>%
     # Pivot to tidy format
     tidyr::pivot_longer(cols = dplyr::contains("Class"),
                         names_to = "SizeClass",
@@ -152,9 +152,6 @@ wrangleObservations <- function(raw_data) {
 
   # Remove ID col from SiteVisit tbl, not needed after join
   raw_data$data$SiteVisit["globalid"] <- NULL
-
-  # Update col names in metadata fields
-  raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
 }
@@ -253,7 +250,7 @@ packageMOJNAspen <- function(aspen_data) {
     # Update taxonomy
     if("scientificName" %in% names(tbl)) {
       tbl <- tbl %>%
-        dplyr::rename(verbatimIdentification = scientificName) %>%
+        dplyr::rename(verbatimIdentification = speciesName) %>%
         dplyr::mutate(scientificName = dplyr::na_if(verbatimIdentification, "Unknown")) %>%
         QCkit::get_taxon_rank("scientificName") %>%
         dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
