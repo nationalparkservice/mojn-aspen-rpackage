@@ -106,7 +106,7 @@ wrangleSiteVisit <- function(raw_data) {
 wrangleDisturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, dplyr::any_of("Community")) %>%
+    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, Community) %>%
     dplyr::right_join(raw_data$data$Disturbances,
                       by = dplyr::join_by("parentglobalid")) %>%
     dplyr::rename(DisturbanceCode = Disturbance) %>%
@@ -115,9 +115,6 @@ wrangleDisturbances <- function(raw_data) {
                        dplyr::select(DisturbanceCode = name, Disturbance = label),
                      by = join_by(DisturbanceCode)) %>%
     dplyr::select(-parentglobalid, -globalid, -DisturbanceCode)
-
-  # Update col names in metadata fields
-  raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
 }
