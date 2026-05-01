@@ -40,7 +40,7 @@ pkg_globals <- new.env(parent = emptyenv())
 #'
 #' @return raw_site_data with updated sites table and metadata fields
 wrangleSites <- function(raw_site_data) {
-  raw_site_data$data$`MOJN Aspen Sites Master` <- raw_site_data$data$`MOJN Aspen Sites Master` %>%
+  raw_site_data$data$AllSites <- raw_site_data$data$AllSites %>%
     # Remove trailing underscores from column names
     dplyr::rename_with(~ sub("_$", "", .x)) %>%
     dplyr::mutate(
