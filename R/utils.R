@@ -106,7 +106,7 @@ wrangleSiteVisit <- function(raw_data) {
 wrangleDisturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitType, VisitDate, Community) %>%
+    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitDate, VisitType, Community) %>%
     dplyr::right_join(raw_data$data$Disturbances,
                       by = dplyr::join_by("parentglobalid")) %>%
     dplyr::rename(DisturbanceCode = Disturbance) %>%
@@ -127,7 +127,7 @@ wrangleDisturbances <- function(raw_data) {
 wrangleObservations <- function(raw_data) {
   # Join site visit info to observations tbl
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitType, VisitDate, Community) %>%
+    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitDate, VisitType, Community) %>%
     dplyr::right_join(raw_data$data$Observations,
                       by = dplyr::join_by("parentglobalid")) %>%
     # Expand species codes to show full scientific names
@@ -164,7 +164,7 @@ wrangleObservations <- function(raw_data) {
 wranglePests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
-    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitType, VisitDate, Community, SpeciesCode, SpeciesName) %>%
+    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitDate, VisitType, Community, SpeciesCode, SpeciesName) %>%
     dplyr::distinct() %>%
     dplyr::right_join(raw_data$data$Pests,
                       by = join_by("parentglobalid")) %>%
