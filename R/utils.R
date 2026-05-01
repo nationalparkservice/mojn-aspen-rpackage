@@ -194,6 +194,7 @@ loadAndWrangleMOJNAspen <- function(
 #' @param aspen_data The aspen_data object as returned by loadAndWrangleMOJNAspen
 #'
 #' @return aspen_data with data package formatting
+#' @export
 packageMOJNAspen <- function(aspen_data) {
   # Add structure check?
 
@@ -322,8 +323,6 @@ loadAndWrangleUCBNAspen <- function(
 #' Write aspen data to CSV
 #'
 #' @inheritParams fetchagol::writeToFiles
-#'
-#' @export
 #'
 writeAspen <- function(all_data, data_dir = here::here("data", "final"), dictionary_dir = here::here("data", "dictionary"),
                       dictionary_filenames = c(tables = "data_dictionary_tables.txt",
