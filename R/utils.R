@@ -65,7 +65,7 @@ wrangleSites <- function(raw_site_data) {
       dplyr::relocate(Shift, VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
       dplyr::relocate(Stand_Height, .after = Zone) %>%
       # Remove unnecessary columns
-      dplyr::select(-dplyr::any_of(c("SiteDescription", "LegacyFrame", "NavigationNotes","Xcoord", "Ycoord", "GlobalID")))
+      dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID)
 
   invisible(raw_site_data)
 }
