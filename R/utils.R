@@ -164,7 +164,7 @@ wrangleObservations <- function(raw_data) {
 wranglePests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
-    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, dplyr::any_of("Community"), SpeciesCode, ScientificName) %>%
+    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitType, VisitDate, Community, SpeciesCode, SpeciesName) %>%
     dplyr::distinct() %>%
     dplyr::right_join(raw_data$data$Pests,
                       by = join_by("parentglobalid")) %>%
@@ -177,9 +177,6 @@ wranglePests <- function(raw_data) {
 
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
-
-  # Update col names in metadata fields
-  raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
 }
