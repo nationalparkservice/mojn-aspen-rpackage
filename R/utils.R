@@ -226,15 +226,15 @@ loadAndWrangleMOJNAspen <- function(
 #' @return aspen_data with data package formatting
 packageMOJNAspen <- function(aspen_data) {
   # Add structure check?
-  tbl_names <- names(aspen_data$data)
 
-  # Wrangling for all tbls
+  tbl_names <- names(aspen_data$data)
   aspen_data$data <- lapply(tbl_names, function(nm) {
     tbl <- aspen_data$data[[nm]]
-
+    # Wrangling for all tbls
     tbl <- tbl %>%
       janitor::clean_names(case = "lower_camel") %>%
       dplyr::rename(unitCode = park, # CSO standard
+                    unitName = parkName, # CSO standard
                     siteID = site, # CSO standard
                     eventDate = visitDate # DWC name
                     ) %>%
@@ -244,7 +244,7 @@ packageMOJNAspen <- function(aspen_data) {
       dplyr::relocate(unitName, .after = unitCode)
 
     # Update taxonomy
-    if("scientificName" %in% names(tbl)) {
+    if("speciesName" %in% names(tbl)) {
       tbl <- tbl %>%
         dplyr::rename(verbatimIdentification = speciesName) %>%
         dplyr::mutate(scientificName = dplyr::na_if(verbatimIdentification, "Unknown")) %>%
@@ -254,13 +254,7 @@ packageMOJNAspen <- function(aspen_data) {
       # Hard code temporary fixes
       tbl$scientificName[tbl$scientificName == "Cercocarpus ledifollius"] <- "Cercocarpus ledifolius"
       tbl$scientificName[tbl$scientificName == "Pinus longeava"] <- "Pinus longaeva"
-    }
-
-    # Update observations tbl
-    if(nm == "Observations") {
-      tbl <- tbl %>%
-        dplyr::rename(individualCount = treeCount)  # DWC name
-    }
+      }
 
     # Update site visit tbl
     if(nm == "SiteVisit") {
@@ -274,9 +268,9 @@ packageMOJNAspen <- function(aspen_data) {
                       aspectInDegrees = aspect, # Add unit to col name
                       GRTSOrder = grtsOrder) %>%
         dplyr::mutate(basisOfRecord = "Event")
-    }
+      }
     return(tbl)
-  })
+    })
   names(aspen_data$data) <- tbl_names
   return(aspen_data)
 }
