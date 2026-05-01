@@ -106,7 +106,7 @@ wrangleSiteVisit <- function(raw_data) {
 wrangleDisturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, Site, VisitType, VisitDate, Community) %>%
+    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitType, VisitDate, Community) %>%
     dplyr::right_join(raw_data$data$Disturbances,
                       by = dplyr::join_by("parentglobalid")) %>%
     dplyr::rename(DisturbanceCode = Disturbance) %>%
