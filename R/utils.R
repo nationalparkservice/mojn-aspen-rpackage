@@ -132,13 +132,13 @@ wrangleObservations <- function(raw_data) {
                       by = dplyr::join_by("parentglobalid")) %>%
     # Expand species codes to show full scientific names
     dplyr::left_join(raw_data$metadata$Observations$fields$SpeciesCode$lookup$lookup_df %>%
-                       dplyr::mutate(SpeciescName = gsub("\\s*\\([^)]*\\)", "", label)),
+                       dplyr::mutate(SpeciesName = gsub("\\s*\\([^)]*\\)", "", label)),
                      by = join_by(SpeciesCode == name)) %>%
     dplyr::relocate(SpeciesName, .after = SpeciesCode) %>%
     # Pivot to tidy format
     tidyr::pivot_longer(cols = dplyr::contains("Class"),
                         names_to = "SizeClass",
-                        values_to = "TreeCount") %>%
+                        values_to = "IndividualCount") %>%
     # Add class descriptions
     dplyr::mutate(SizeClassDescription = dplyr::case_when(
       SizeClass == "Class1" ~ "Suckers or seedlings less than 46 cm tall",
@@ -194,28 +194,27 @@ loadAndWrangleMOJNAspen <- function(
     site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
     agol_username = "mojn_data") {
 
-  # Import aspen db
+  # Import aspen db and all sites tbl
   raw_data <- fetchagol::fetchRawData(aspen_url, agol_username)
+  raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
 
-  # If sites url is provided, load and wrangle sites data
-  if(!is.null(site_url)) {
-    raw_site_data <- fetchagol::fetchRawData(site_url, agol_username) %>%
-      wrangleSites()
-    # Add to raw_data
-    raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
-    raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
-  }
+  # Combine for processing
+  raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
+  raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
 
-  # Remove db cols, trim white space, makes blanks NA
-  cols_to_remove <- grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)
-  raw_data <- fetchagol::cleanData(raw_data, cols_to_remove = cols_to_remove)
-
-  # Wrangle db tables
+  # wrangle all tbls
   aspen_data <- raw_data %>%
+    fetchagol::cleanData(cols_to_remove =
+                           grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)) %>%
+    wrangleSites() %>%
     wrangleSiteVisit() %>%
     wrangleDisturbances() %>%
     wrangleObservations() %>%
     wranglePests()
+
+  # Remove metadata and all sites tbl
+  aspen_data$metadata <- NULL
+  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
 
   invisible(aspen_data)
 }
