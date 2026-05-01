@@ -77,30 +77,23 @@ wrangleSites <- function(raw_site_data) {
 #' @return raw_data with updated site visit table and metadata fields
 wrangleSiteVisit <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+    # Expand park code
+    dplyr::left_join(raw_data$metadata$SiteVisit$fields$Park$lookup$lookup_df %>%
+                       dplyr::select(Park = name, ParkName = description),
+                     by = dplyr::join_by(Park)) %>%
+    dplyr::relocate(ParkName, .after = Park) %>%
     # Expand protocol version
     dplyr::left_join(raw_data$metadata$SiteVisit$fields$ProtocolVersion$lookup$lookup_df %>%
                        dplyr::select(ProtocolVersion = name, label),
                      by = join_by(ProtocolVersion)) %>%
     dplyr::mutate(VisitDate = as.Date(VisitDate),
                   ProtocolVersion = label) %>%
-    dplyr::relocate(VisitType, Observer, Recorder, ProtocolVersion, FieldSeason, .after = VisitDate) %>%
+    # Join site info from all sites tbl
+    dplyr::left_join(raw_data$data$AllSites,
+                     by = dplyr::join_by(Park, Site)) %>%
+    dplyr::relocate(Stratum, Zone, VisitDate, VisitType, .before = Observer) %>%
+    dplyr::relocate(Evaluation:GRTSAssessment, ProtocolVersion, Community, VisitNotes, .after = dplyr::last_col()) %>%
     dplyr::select(-StartTime, -EndTime, -label, -parentglobalid)
-
-  # If sites tbl is available, join on sites info
-  if(!is.null(raw_data$data$AllSites)) {
-    raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
-      dplyr::left_join(raw_data$data$AllSites,
-                       by = dplyr::join_by(Park, Site)) %>%
-      dplyr::relocate(Stratum, Zone, .after = Site) %>%
-      dplyr::relocate(Evaluation:GRTSAssessment, ProtocolVersion, Community, VisitNotes, .after = dplyr::last_col())
-
-    # Remove sites table from raw_data
-    raw_data$data$AllSites <- NULL
-    raw_data$metadata$AllSites <- NULL
-  }
-
-  # Update col names in metadata fields
-  raw_data <- .update_metadata_fields(raw_data)
 
   invisible(raw_data)
 }
@@ -255,13 +248,9 @@ packageMOJNAspen <- function(aspen_data) {
                     siteID = site, # CSO standard
                     eventDate = visitDate # DWC name
                     ) %>%
-      dplyr::mutate(
-        unitName = dplyr::case_when(unitCode == "GRBA" ~ "Great Basin National Park",
-                                    unitCode == "PARA" ~ "Grand Canyon-Parashant National Monument",
-                                    TRUE ~ NA_character_),
-        type = "Event", # DWC column
-        basisOfRecord = "HumanObservation" # DWC column
-        ) %>%
+      dplyr::mutate(type = "Event", # DWC column
+                    basisOfRecord = "HumanObservation" # DWC column
+                    ) %>%
       dplyr::relocate(unitName, .after = unitCode)
 
     # Update taxonomy
