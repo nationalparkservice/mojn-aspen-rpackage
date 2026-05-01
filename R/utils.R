@@ -4,36 +4,6 @@
 
 pkg_globals <- new.env(parent = emptyenv())
 
-#' Update metadata fields to match column names in corresponding table
-#'
-#' @param raw_data The raw_data object as returned by fetchagol::fetchRawData
-#'
-#' @return raw_data with updated metadata fields
-.update_metadata_fields <- function(raw_data) {
-  for (tbl in names(raw_data$data)) {
-    cols <- names(raw_data$data[[tbl]])
-    fields <- raw_data$metadata[[tbl]]$fields
-
-    # Identify columns missing in metadata
-    missing_cols <- setdiff(cols, names(fields))
-
-    # Create minimal metadata for missing columns
-    if (length(missing_cols)) {
-      fields[missing_cols] <- stats::setNames(
-        lapply(missing_cols, function(colname) {
-          col_class <- class(raw_data$data[[tbl]][[colname]])
-          list(description = colname,
-               attributes  = list(class = col_class))
-        }),
-        missing_cols
-      )
-    }
-    # Reorder metadata fields to match the table's column order
-    raw_data$metadata[[tbl]]$fields <- fields[cols]
-  }
-  invisible(raw_data)
-}
-
 #' Wrangle optional sites table
 #'
 #' @param raw_site_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master
