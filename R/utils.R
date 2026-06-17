@@ -109,15 +109,26 @@ wrangleObservations <- function(raw_data) {
     tidyr::pivot_longer(cols = dplyr::contains("Class"),
                         names_to = "SizeClass",
                         values_to = "IndividualCount") %>%
-    # Add class descriptions
-    dplyr::mutate(SizeClassDescription = dplyr::case_when(
-      SizeClass == "Class1" ~ "Suckers or seedlings less than 46 cm tall",
-      SizeClass == "Class2" ~ "Suckers or seedlings l46 cm to 152 cm tall",
-      SizeClass == "Class3" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
-      SizeClass == "Class4" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
-      SizeClass == "Class5" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
-      SizeClass == "Class6" ~ "Dead stems greater than 2.5 cm in dbh",
-    )) %>%
+
+    dplyr::mutate(
+      # Display class sizes as roman numerals to match UCBN data and protocol
+      SizeClass = dplyr::case_when(
+        SizeClass == "Class1" ~ "Class I",
+        SizeClass == "Class2" ~ "Class II",
+        SizeClass == "Class3" ~ "Class III",
+        SizeClass == "Class4" ~ "Class IV",
+        SizeClass == "Class5" ~ "Class V",
+        SizeClass == "Class6" ~ "Class VI"
+        ),
+      # Add class descriptions
+      SizeClassDescription = dplyr::case_when(
+        SizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        SizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        SizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        SizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        SizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        SizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+        )) %>%
     dplyr::select(-parentglobalid, -label)
 
   # Remove ID col from SiteVisit tbl, not needed after join
