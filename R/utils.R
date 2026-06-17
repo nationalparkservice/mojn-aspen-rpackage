@@ -109,7 +109,6 @@ wrangleObservations <- function(raw_data) {
     tidyr::pivot_longer(cols = dplyr::contains("Class"),
                         names_to = "SizeClass",
                         values_to = "IndividualCount") %>%
-
     dplyr::mutate(
       # Display class sizes as roman numerals to match UCBN data and protocol
       SizeClass = dplyr::case_when(
