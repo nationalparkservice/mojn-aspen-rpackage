@@ -176,7 +176,7 @@ loadAndWrangleMOJNAspen <- function(
     agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
 
   # Import aspen db and all sites tbl
-  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username)
+  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username, agol_password)
   raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
 
   # Combine for processing
