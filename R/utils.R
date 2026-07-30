@@ -172,7 +172,8 @@ wranglePests <- function(raw_data) {
 loadAndWrangleMOJNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
     site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
-    agol_username = "mojn_data") {
+    agol_username = "mojn_data",
+    agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
 
   # Import aspen db and all sites tbl
   raw_data <- fetchagol::fetchRawData(aspen_url, agol_username)
