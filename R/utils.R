@@ -37,7 +37,7 @@ wrangleSites <- function(raw_site_data) {
       # Remove unnecessary columns
       dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID)
 
-  invisible(raw_site_data)
+  return(raw_site_data)
 }
 
 #' Wrangle site visit table
@@ -65,7 +65,7 @@ wrangleSiteVisit <- function(raw_data) {
     dplyr::relocate(Evaluation:GRTSAssessment, ProtocolVersion, Community, VisitNotes, .after = dplyr::last_col()) %>%
     dplyr::select(-StartTime, -EndTime, -label, -parentglobalid)
 
-  invisible(raw_data)
+  return(raw_data)
 }
 
 #' Wrangle disturbances table
@@ -86,7 +86,7 @@ wrangleDisturbances <- function(raw_data) {
                      by = join_by(DisturbanceCode)) %>%
     dplyr::select(-parentglobalid, -globalid, -DisturbanceCode)
 
-  invisible(raw_data)
+  return(raw_data)
 }
 
 #' Wrangle observations table
@@ -133,7 +133,7 @@ wrangleObservations <- function(raw_data) {
   # Remove ID col from SiteVisit tbl, not needed after join
   raw_data$data$SiteVisit["globalid"] <- NULL
 
-  invisible(raw_data)
+  return(raw_data)
 }
 
 #' Wrangle pests table
@@ -158,7 +158,7 @@ wranglePests <- function(raw_data) {
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
 
-  invisible(raw_data)
+  return(raw_data)
 }
 
 #' Fetch aspen data from AGOL and perform preliminary data wrangling
