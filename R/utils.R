@@ -196,7 +196,8 @@ loadAndWrangleMOJNAspen <- function(
   # Remove metadata and all sites tbl
   aspen_data$metadata <- NULL
   aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
-
+# Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
+assign("mojn_aspen_data", aspen_data, envir = pkg_globals)
   invisible(aspen_data)
 }
 
