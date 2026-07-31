@@ -267,7 +267,7 @@ loadAndWrangleMOJNAspen <- function(
 #' @param agol_username Authentication token (not needed for public layers)
 #'
 #' @return A list of data frames and metadata
-#' @export
+#'
 
 loadAndWrangleUCBNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/service_4d6343e9204142928351c52c6f1362c5/FeatureServer",

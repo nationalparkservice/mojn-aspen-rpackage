@@ -10,11 +10,16 @@ Description: This R package is intended to provide automated QA/QC, visualizatio
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 Imports: 
     dplyr,
     fetchagol,
-    magrittr
+    here,
+    janitor,
+    keyring,
+    magrittr,
+    QCkit,
+    tidyr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
