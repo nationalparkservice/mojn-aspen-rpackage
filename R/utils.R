@@ -172,10 +172,11 @@ wranglePests <- function(raw_data) {
 loadAndWrangleMOJNAspen <- function(
     aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
     site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
-    agol_username = "mojn_data") {
+    agol_username = "mojn_data",
+    agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
 
   # Import aspen db and all sites tbl
-  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username)
+  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username, agol_password)
   raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
 
   # Combine for processing
@@ -195,7 +196,8 @@ loadAndWrangleMOJNAspen <- function(
   # Remove metadata and all sites tbl
   aspen_data$metadata <- NULL
   aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
-
+# Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
+assign("mojn_aspen_data", aspen_data, envir = pkg_globals)
   invisible(aspen_data)
 }
 
