@@ -161,56 +161,15 @@ wranglePests <- function(raw_data) {
   return(raw_data)
 }
 
-#' Fetch aspen data from AGOL and perform preliminary data wrangling
-#'
-#' @param aspen_url URL to main AGOL aspen database
-#' @param site_url URL to AGOL database for aspen sites (if applicable)
-#' @param agol_username Username to AGOL account to access internal data
-#'
-#' @return A list of data frames and metadata
-#' @export
-loadAndWrangleMOJNAspen <- function(
-    aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
-    site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
-    agol_username = "mojn_data",
-    agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
-
-  # Import aspen db and all sites tbl
-  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username, agol_password)
-  raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
-
-  # Combine for processing
-  raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
-  raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
-
-  # wrangle all tbls
-  aspen_data <- raw_data %>%
-    fetchagol::cleanData(cols_to_remove =
-                           grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)) %>%
-    wrangleSites() %>%
-    wrangleSiteVisit() %>%
-    wrangleDisturbances() %>%
-    wrangleObservations() %>%
-    wranglePests()
-
-  # Remove metadata and all sites tbl
-  aspen_data$metadata <- NULL
-  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
-# Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
-assign("mojn_aspen_data", aspen_data, envir = pkg_globals)
-  invisible(aspen_data)
-}
-
 #' Format aspen data for data package publication
 #'
-#' @param aspen_data The aspen_data object as returned by loadAndWrangleMOJNAspen
+#' @param aspen_data The wrangled raw_data object
 #'
 #' @return aspen_data with data package formatting
-#' @export
 packageMOJNAspen <- function(aspen_data) {
-  # Add structure check?
 
   tbl_names <- names(aspen_data$data)
+
   aspen_data$data <- lapply(tbl_names, function(nm) {
     tbl <- aspen_data$data[[nm]]
     # Wrangling for all tbls
@@ -256,6 +215,46 @@ packageMOJNAspen <- function(aspen_data) {
     })
   names(aspen_data$data) <- tbl_names
   return(aspen_data)
+}
+
+#' Fetch aspen data from AGOL and perform preliminary data wrangling
+#'
+#' @param aspen_url URL to main AGOL aspen database
+#' @param site_url URL to AGOL database for aspen sites (if applicable)
+#' @param agol_username Username to AGOL account to access internal data
+#'
+#' @return A list of data frames and metadata
+#' @export
+loadAndWrangleMOJNAspen <- function(
+    aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
+    site_url =  "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
+    agol_username = "mojn_data",
+    agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
+
+  # Import aspen db and all sites tbl
+  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username, agol_password)
+  raw_site_data <- fetchagol::fetchRawData(site_url, agol_username)
+
+  # Combine for processing
+  raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
+  raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
+
+  # wrangle all tbls
+  aspen_data <- raw_data %>%
+    fetchagol::cleanData(cols_to_remove =
+                           grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)) %>%
+    wrangleSites() %>%
+    wrangleSiteVisit() %>%
+    wrangleDisturbances() %>%
+    wrangleObservations() %>%
+    wranglePests()
+
+  # Remove metadata and all sites tbl
+  aspen_data$metadata <- NULL
+  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
+# Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
+assign("mojn_aspen_data", aspen_data, envir = pkg_globals)
+  invisible(aspen_data)
 }
 
 #' Fetch aspen data from AGOL and do preliminary data wrangling
