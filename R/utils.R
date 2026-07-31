@@ -158,6 +158,10 @@ wranglePests <- function(raw_data) {
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
 
+  # Remove metadata and AllSites tbl as final step before packaging
+  aspen_data$metadata <- NULL
+  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
+
   return(raw_data)
 }
 
@@ -248,18 +252,12 @@ loadAndWrangleMOJNAspen <- function(
     wrangleSiteVisit() %>%
     wrangleDisturbances() %>%
     wrangleObservations() %>%
-    wranglePests()
-
-  # Remove metadata and all sites tbl
-  aspen_data$metadata <- NULL
-  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
-
-  # Format wrangled data as a data package
-  mojn_aspen_data <- packageMOJNAspen(aspen_data)
+    wranglePests() %>%
+    packageMOJNAspen()
 
   # Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
-  assign("mojn_aspen_data", mojn_aspen_data, envir = pkg_globals)
-  invisible(mojn_aspen_data)
+  assign("mojn_aspen_data", aspen_data, envir = pkg_globals)
+  invisible(aspen_data)
 }
 
 #' Fetch aspen data from AGOL and do preliminary data wrangling
