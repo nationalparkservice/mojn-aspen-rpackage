@@ -42,7 +42,7 @@ wrangleSites <- function(raw_site_data) {
 
 #' Wrangle site visit table
 #'
-#' @inheritParams .update_metadata_fields
+#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated site visit table and metadata fields
 wrangleSiteVisit <- function(raw_data) {
@@ -70,7 +70,7 @@ wrangleSiteVisit <- function(raw_data) {
 
 #' Wrangle disturbances table
 #'
-#' @inheritParams .update_metadata_fields
+#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated disturbances table and metadata fields
 wrangleDisturbances <- function(raw_data) {
@@ -91,7 +91,7 @@ wrangleDisturbances <- function(raw_data) {
 
 #' Wrangle observations table
 #'
-#' @inheritParams .update_metadata_fields
+#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated observations table and metadata fields
 wrangleObservations <- function(raw_data) {
@@ -138,7 +138,7 @@ wrangleObservations <- function(raw_data) {
 
 #' Wrangle pests table
 #'
-#' @inheritParams .update_metadata_fields
+#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated pests table and metadata fields
 wranglePests <- function(raw_data) {
@@ -163,7 +163,7 @@ wranglePests <- function(raw_data) {
 
 #' Format aspen data for data package publication
 #'
-#' @param aspen_data The wrangled raw_data object
+#' @param aspen_data The wrangled aspen data
 #'
 #' @return aspen_data with data package formatting
 packageMOJNAspen <- function(aspen_data) {
