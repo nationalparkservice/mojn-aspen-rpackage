@@ -158,10 +158,6 @@ wranglePests <- function(raw_data) {
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
 
-  # Remove metadata and AllSites tbl as final step before packaging
-  aspen_data$metadata <- NULL
-  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
-
   return(raw_data)
 }
 
@@ -171,6 +167,9 @@ wranglePests <- function(raw_data) {
 #'
 #' @return aspen_data with data package formatting
 packageMOJNAspen <- function(aspen_data) {
+  # Remove metadata and AllSites tbl from final data package tbls
+  aspen_data$metadata <- NULL
+  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
 
   tbl_names <- names(aspen_data$data)
 
