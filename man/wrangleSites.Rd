@@ -4,10 +4,10 @@
 \alias{wrangleSites}
 \title{Wrangle optional sites table}
 \usage{
-wrangleSites(raw_site_data)
+wrangleSites(raw_data)
 }
 \arguments{
-\item{raw_site_data}{Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
+\item{raw_data}{Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
 }
 \value{
 raw_site_data with updated sites table and metadata fields
