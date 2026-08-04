@@ -273,3 +273,30 @@ loadAndWrangleMOJNAspen <- function(
   assign("mojn_aspen_data", aspen_data, envir = pkg_globals)
   invisible(aspen_data)
 }
+
+#' Wrangle UCBN sites table
+#'
+#' @param raw_data Data table returned by fetchagol::fetchRawData on UCBN_Aspen_Locations_pt_20210430
+#'
+#' @return raw_data with updated sites table
+wrangleUCBNSites <- function(raw_data) {
+  raw_data$data$Locations <- raw_data$data$Locations %>%
+    # Generate lat/long coordinates from UTM
+    QCkit::generate_ll_from_utm(EastingCol = "X_Coord", NorthingCol = "Y_Coord", ZoneCol = "UTM_Zone", DatumCol = "Datum", latlong_datum = "WGS84") %>%
+    dplyr::mutate(
+      # Format UTM coordinates using DWC column names
+      VerbatimCoordinates = ifelse(is.na(.data$X_Coord) | is.na(.data$Y_Coord), NA_character_, paste0(UTM_Zone, " ", .data$X_Coord, "m E ", .data$Y_Coord, "m N")),
+      # Add geographic info columns
+      VerbatimSRS = "EPSG:4269", # code for NAD83
+      GeodeticDatum = "EPSG:4326", # code for WGS84
+      # Add wkid column for lat long coordinates for use in generating elevation, aspect, slope
+      # From ESRI Developer: 4326 is generally assumed to be the spatial reference when talking about "latitude" or "longitude"
+      # (https://developers.arcgis.com/documentation/spatial-references/)
+      latlong_wkid = "4326"
+    ) %>%
+    # Get elevation, aspect, slope from AGOL
+    ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = "mojn_data") %>%
+    dplyr::select(Loc_Name, VerbatimCoordinateSystem = Coord_Syst, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
+
+  return(raw_data)
+}
