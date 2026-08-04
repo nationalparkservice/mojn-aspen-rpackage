@@ -7,7 +7,7 @@
 wrangleSites(raw_data)
 }
 \arguments{
-\item{raw_data}{Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
+\item{raw_data}{Data table returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
 }
 \value{
 raw_site_data with updated sites table and metadata fields

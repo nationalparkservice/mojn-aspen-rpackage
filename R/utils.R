@@ -2,7 +2,22 @@
 #' @import dplyr
 #' @import fetchagol
 
+# Initiate new environment accessible from within package
 pkg_globals <- new.env(parent = emptyenv())
+
+# Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
+globalVariables(c("Community", "Disturbance", "DisturbanceCode", "EndTime", "Evaluation",
+                "GRTSAssessment", "GeodeticDatum", "GlobalID", "Lat", "LegacyFrame",
+                "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "PestCodes",
+                "ProtocolVersion", "Shift", "Site", "SiteDescription", "SpeciesCode",
+                "SpeciesName", "Stand_Height", "StartTime", "Stratum",
+                "VerbatimCoordinateSystem", "VerbatimCoordinates", "VerbatimSRS",
+                "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
+                "aspect", "description","parentglobalid", "elevation", "globalid",
+                "grtsAssessment", "grtsOrder", "label", "lat", "long", "name", "park",
+                "parkName", "scientificName", "site", "slope", "speciesName",
+                "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
+                "verbatimSrs", "visitDate"))
 
 #' Wrangle optional sites table
 #'
@@ -16,17 +31,17 @@ wrangleSites <- function(raw_data) {
     dplyr::mutate(
       # Expand codes to differentiate between NA char and NA
       Shift = dplyr::case_when(
-        .data$Shift == "NA" ~ "Not Shifted",
-        .data$Shift == "S" ~ "South",
-        .data$Shift == "N" ~ "North",
-        .data$Shift == "E" ~ "East",
-        .data$Shift == "W" ~ "West",
-        TRUE ~ .data$Shift),
+        Shift == "NA" ~ "Not Shifted",
+        Shift == "S" ~ "South",
+        Shift == "N" ~ "North",
+        Shift == "E" ~ "East",
+        Shift == "W" ~ "West",
+        TRUE ~ Shift),
       # Format UTM coordinates using DWC column names
       VerbatimCoordinates = dplyr::case_when(
-        is.na(.data$Xcoord) | is.na(.data$Ycoord) ~ NA_character_,
-        .data$Park == "GRBA" ~ paste0("11N ", .data$Xcoord, "m E ", .data$Ycoord, "m N"),
-        .data$Park == "PARA" ~ paste0("12N ", .data$Xcoord, "m E ", .data$Ycoord, "m N")),
+        is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
+        Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
+        Park == "PARA" ~ paste0("12N ", Xcoord, "m E ", Ycoord, "m N")),
       # Add geographic info columns
       VerbatimCoordinateSystem = "UTM",
       VerbatimSRS = "EPSG:4269", # code for NAD83
@@ -56,8 +71,8 @@ wrangleSiteVisit <- function(raw_data) {
     dplyr::left_join(raw_data$metadata$SiteVisit$fields$ProtocolVersion$lookup$lookup_df %>%
                        dplyr::select(ProtocolVersion = name, label),
                      by = join_by(ProtocolVersion)) %>%
-    dplyr::mutate(VisitDate = as.Date(.data$VisitDate),
-                  ProtocolVersion = .data$label) %>%
+    dplyr::mutate(VisitDate = as.Date(VisitDate),
+                  ProtocolVersion = label) %>%
     # Join site info from all sites tbl
     dplyr::left_join(raw_data$data$AllSites,
                      by = dplyr::join_by(Park, Site)) %>%
@@ -112,21 +127,21 @@ wrangleObservations <- function(raw_data) {
     dplyr::mutate(
       # Display class sizes as roman numerals to match UCBN data and protocol
       SizeClass = dplyr::case_when(
-        .data$SizeClass == "Class1" ~ "Class I",
-        .data$SizeClass == "Class2" ~ "Class II",
-        .data$SizeClass == "Class3" ~ "Class III",
-        .data$SizeClass == "Class4" ~ "Class IV",
-        .data$SizeClass == "Class5" ~ "Class V",
-        .data$SizeClass == "Class6" ~ "Class VI"
+        SizeClass == "Class1" ~ "Class I",
+        SizeClass == "Class2" ~ "Class II",
+        SizeClass == "Class3" ~ "Class III",
+        SizeClass == "Class4" ~ "Class IV",
+        SizeClass == "Class5" ~ "Class V",
+        SizeClass == "Class6" ~ "Class VI"
         ),
       # Add class descriptions
       SizeClassDescription = dplyr::case_when(
-        .data$SizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
-        .data$SizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
-        .data$SizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
-        .data$SizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
-        .data$SizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
-        .data$SizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+        SizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        SizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        SizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        SizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        SizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        SizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
         )) %>%
     dplyr::select(-parentglobalid, -label)
 
@@ -192,7 +207,7 @@ packageMOJNAspen <- function(aspen_data) {
     if("speciesName" %in% names(tbl)) {
       tbl <- tbl %>%
         dplyr::rename(verbatimIdentification = speciesName) %>%
-        dplyr::mutate(scientificName = dplyr::na_if(.data$verbatimIdentification, "Unknown")) %>%
+        dplyr::mutate(scientificName = dplyr::na_if(verbatimIdentification, "Unknown")) %>%
         QCkit::get_taxon_rank("scientificName") %>%
         dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
 
