@@ -2,26 +2,29 @@
 % Please edit documentation in R/utils.R
 \name{loadAndWrangleMOJNAspen}
 \alias{loadAndWrangleMOJNAspen}
-\title{Fetch aspen data from AGOL and do preliminary data wrangling}
+\title{Fetch, wrangle, and package aspen data from AGOL}
 \usage{
 loadAndWrangleMOJNAspen(
   aspen_url =
     "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
   site_url =
     "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
-  agol_username = "mojn_data"
+  agol_username = "mojn_data",
+  agol_password = keyring::key_get(service = "AGOL", username = agol_username)
 )
 }
 \arguments{
-\item{aspen_url}{URL to main AGOL aspen database}
+\item{aspen_url}{URL to MOJN_Aspen_Database on AGOL}
 
-\item{site_url}{URL to AGOL database for aspen sites (if applicable)}
+\item{site_url}{URL to MOJN_Aspen_Sites_Master on AGOL}
 
-\item{agol_username}{Authentication token (not needed for public layers)}
+\item{agol_username}{AGOL headless account username}
+
+\item{agol_password}{AGOL headless account password (do not hard code this into your scripts!)}
 }
 \value{
-A list of data frames and metadata
+A list of aspen data frames in data package format
 }
 \description{
-Fetch aspen data from AGOL and do preliminary data wrangling
+Fetch, wrangle, and package aspen data from AGOL
 }
