@@ -10,7 +10,7 @@ wranglePests(raw_data)
 \item{raw_data}{Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database}
 }
 \value{
-raw_data with updated pests table and metadata fields
+raw_data with updated pests table
 }
 \description{
 Wrangle pests table

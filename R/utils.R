@@ -19,11 +19,11 @@ globalVariables(c("Community", "Disturbance", "DisturbanceCode", "EndTime", "Eva
                 "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
                 "verbatimSrs", "visitDate"))
 
-#' Wrangle optional sites table
+#' Wrangle sites table
 #'
 #' @param raw_data Data table returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master
 #'
-#' @return raw_site_data with updated sites table and metadata fields
+#' @return raw_data with updated sites table
 wrangleSites <- function(raw_data) {
   raw_data$data$AllSites <- raw_data$data$AllSites %>%
     # Remove trailing underscores from column names
@@ -59,7 +59,7 @@ wrangleSites <- function(raw_data) {
 #'
 #' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
-#' @return raw_data with updated site visit table and metadata fields
+#' @return raw_data with updated site visit table
 wrangleSiteVisit <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
     # Expand park code
@@ -87,7 +87,7 @@ wrangleSiteVisit <- function(raw_data) {
 #'
 #' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
-#' @return raw_data with updated disturbances table and metadata fields
+#' @return raw_data with updated disturbances table
 wrangleDisturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
@@ -108,7 +108,7 @@ wrangleDisturbances <- function(raw_data) {
 #'
 #' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
-#' @return raw_data with updated observations table and metadata fields
+#' @return raw_data with updated observations table
 wrangleObservations <- function(raw_data) {
   # Join site visit info to observations tbl
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
@@ -155,7 +155,7 @@ wrangleObservations <- function(raw_data) {
 #'
 #' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
-#' @return raw_data with updated pests table and metadata fields
+#' @return raw_data with updated pests table
 wranglePests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
