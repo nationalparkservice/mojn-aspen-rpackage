@@ -6,18 +6,25 @@
 pkg_globals <- new.env(parent = emptyenv())
 
 # Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
-globalVariables(c("Community", "Disturbance", "DisturbanceCode", "EndTime", "Evaluation",
-                "GRTSAssessment", "GeodeticDatum", "GlobalID", "Lat", "LegacyFrame",
-                "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "PestCodes",
-                "ProtocolVersion", "Shift", "Site", "SiteDescription", "SpeciesCode",
-                "SpeciesName", "Stand_Height", "StartTime", "Stratum",
-                "VerbatimCoordinateSystem", "VerbatimCoordinates", "VerbatimSRS",
-                "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
-                "aspect", "description","parentglobalid", "elevation", "globalid",
-                "grtsAssessment", "grtsOrder", "label", "lat", "long", "name", "park",
-                "parkName", "scientificName", "site", "slope", "speciesName",
-                "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
-                "verbatimSrs", "visitDate"))
+globalVariables(c(
+  # MOJN
+  "Community", "Disturbance", "DisturbanceCode", "EndTime", "Evaluation",
+  "GRTSAssessment", "GeodeticDatum", "GlobalID", "Lat", "LegacyFrame",
+  "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "PestCodes",
+  "ProtocolVersion", "Shift", "Site", "SiteDescription", "SpeciesCode",
+  "SpeciesName", "Stand_Height", "StartTime", "Stratum",
+  "VerbatimCoordinateSystem", "VerbatimCoordinates", "VerbatimSRS",
+  "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
+  "aspect", "description","parentglobalid", "elevation", "globalid",
+  "grtsAssessment", "grtsOrder", "label", "lat", "long", "name", "park",
+  "parkName", "scientificName", "site", "slope", "speciesName",
+  "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
+  "verbatimSrs", "visitDate",
+  # UCBN
+  "Aspect", "AspectInDegrees", "Coord_Syst", "Elevation", "Loc_Name",
+  "PlotNum", "Site_Height", "Slope", "Stand", "Transect", "UTM_Zone",
+  "Unique_ID", "UnitName", "decimalLatitude", "decimalLongitude"
+                ))
 
 #' Wrangle sites table
 #'
@@ -297,6 +304,33 @@ wrangleUCBNSites <- function(raw_data) {
     # Get elevation, aspect, slope from AGOL
     ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = "mojn_data") %>%
     dplyr::select(Loc_Name, VerbatimCoordinateSystem = Coord_Syst, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN site visits table
+#'
+#' @param raw_data Data table returned by fetchagol::fetchRawData on 'UCBN Aspen Survey v1'
+#'
+#' @return raw_data with updated sites table
+wrangleUCBNSiteVisist <- function(raw_data) {
+  raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+    dplyr::mutate(
+      # Expand park names
+      UnitName = dplyr::case_when(
+        Park == "CIRO" ~ "City of Rocks National Reserve",
+        Park == "CRMO" ~ "Craters of the Moon National Monument and Preserve"),
+      # Format date
+      VisitDate = format(as.POSIXct(as.numeric(VisitDate) / 1000, origin = "1970-01-01"), "%Y-%m-%d"),
+      # Expand protocol version code to match value in Access data
+      ProtocolVersion = ifelse(ProtocolVersion == 1, "ASPN_1_0", ProtocolVersion)) %>%
+    dplyr::relocate(UnitName, .after = Park) %>%
+    dplyr::left_join(raw_data$data$Locations,
+                     by = join_by(Unique_ID == Loc_Name)) %>%
+    # Order cols
+    dplyr::select(globalid, UnitCode = Park, UnitName, Stand, Transect, PlotNumber = PlotNum,
+                  PlotName = Unique_ID, EventDate = VisitDate, StandHeightInMeters = Site_Height,
+                  VerbatimCoordinateSystem:AspectInDegrees, ProtocolVersion, VisitNotes)
 
   return(raw_data)
 }
