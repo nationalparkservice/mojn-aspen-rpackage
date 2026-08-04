@@ -7,7 +7,7 @@
 wranglePests(raw_data)
 }
 \arguments{
-\item{raw_data}{Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database}
+\item{raw_data}{Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database}
 }
 \value{
 raw_data with updated pests table

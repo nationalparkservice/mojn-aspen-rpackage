@@ -57,7 +57,7 @@ wrangleSites <- function(raw_data) {
 
 #' Wrangle site visit table
 #'
-#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
+#' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated site visit table
 wrangleSiteVisit <- function(raw_data) {
@@ -85,7 +85,7 @@ wrangleSiteVisit <- function(raw_data) {
 
 #' Wrangle disturbances table
 #'
-#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
+#' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated disturbances table
 wrangleDisturbances <- function(raw_data) {
@@ -106,7 +106,7 @@ wrangleDisturbances <- function(raw_data) {
 
 #' Wrangle observations table
 #'
-#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
+#' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated observations table
 wrangleObservations <- function(raw_data) {
@@ -153,7 +153,7 @@ wrangleObservations <- function(raw_data) {
 
 #' Wrangle pests table
 #'
-#' @param raw_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Database
+#' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated pests table
 wranglePests <- function(raw_data) {
