@@ -9,8 +9,8 @@ pkg_globals <- new.env(parent = emptyenv())
 #' @param raw_site_data Object returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master
 #'
 #' @return raw_site_data with updated sites table and metadata fields
-wrangleSites <- function(raw_site_data) {
-  raw_site_data$data$AllSites <- raw_site_data$data$AllSites %>%
+wrangleSites <- function(raw_data) {
+  raw_data$data$AllSites <- raw_data$data$AllSites %>%
     # Remove trailing underscores from column names
     dplyr::rename_with(~ sub("_$", "", .x)) %>%
     dplyr::mutate(
@@ -29,15 +29,15 @@ wrangleSites <- function(raw_site_data) {
         .data$Park == "PARA" ~ paste0("12N ", .data$Xcoord, "m E ", .data$Ycoord, "m N")),
       # Add geographic info columns
       VerbatimCoordinateSystem = "UTM",
-      VerbatimSRS = "EPSG:4269", # code for NAD 83
-      GeodeticDatum = "EPSG:4326" # code for WGS 84
+      VerbatimSRS = "EPSG:4269", # code for NAD83
+      GeodeticDatum = "EPSG:4326" # code for WGS84
       ) %>%
       dplyr::relocate(Shift, VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
       dplyr::relocate(Stand_Height, .after = Zone) %>%
       # Remove unnecessary columns
       dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID)
 
-  return(raw_site_data)
+  return(raw_data)
 }
 
 #' Wrangle site visit table
