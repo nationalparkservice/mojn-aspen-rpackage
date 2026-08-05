@@ -23,7 +23,8 @@ globalVariables(c(
   # UCBN
   "Aspect", "AspectInDegrees", "Coord_Syst", "Elevation", "Loc_Name",
   "PlotNum", "Site_Height", "Slope", "Stand", "Transect", "UTM_Zone",
-  "Unique_ID", "UnitName", "decimalLatitude", "decimalLongitude"
+  "Unique_ID", "UnitName", "decimalLatitude", "decimalLongitude",
+  "EventDate", "UnitCode", "cntClass6List", "sppSummaryCode"
                 ))
 
 #' Wrangle sites table
@@ -347,6 +348,46 @@ wrangleUCBNDisturbances <- function(raw_data) {
                       by = "parentglobalid") %>%
     # dplyr::mutate(Disturbance = ) %>% # expand out codes like ArborHist
     dplyr::select(-parentglobalid, -globalid)
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN observations table
+#'
+#' @param raw_data Data table returned by fetchagol::fetchRawData on 'UCBN Aspen Survey v1'
+#'
+#' @return raw_data with updated sites table
+wrangleUCBNObservations <- function(raw_data) {
+  raw_data$data$Observations <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, UnitCode:EventDate) %>%
+    dplyr::right_join(raw_data$data$Observations,
+                      by = "parentglobalid") %>%
+    # Isolate species name
+    dplyr::mutate(SpeciesName = gsub("\\s*\\([^)]*\\)", "", sppSummaryCode)) %>%
+    dplyr::select(-parentglobalid, -(sppSummaryCode:cntClass6List)) %>%
+    # Pivot to tidy format
+    tidyr::pivot_longer(cols = dplyr::contains("Class"),
+                        names_to = "SizeClass",
+                        values_to = "IndividualCount") %>%
+    dplyr::mutate(
+      # Display class sizes as roman numerals to match UCBN data and protocol
+      SizeClass = dplyr::case_when(
+        SizeClass == "Class1" ~ "Class I",
+        SizeClass == "Class2" ~ "Class II",
+        SizeClass == "Class3" ~ "Class III",
+        SizeClass == "Class4" ~ "Class IV",
+        SizeClass == "Class5" ~ "Class V",
+        SizeClass == "Class6" ~ "Class VI"
+      ),
+      # Add class descriptions
+      SizeClassDescription = dplyr::case_when(
+        SizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        SizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        SizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        SizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        SizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        SizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+      ))
 
   return(raw_data)
 }
