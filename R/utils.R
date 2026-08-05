@@ -334,3 +334,19 @@ wrangleUCBNSiteVisist <- function(raw_data) {
 
   return(raw_data)
 }
+
+#' Wrangle UCBN disturbances table
+#'
+#' @param raw_data Data table returned by fetchagol::fetchRawData on 'UCBN Aspen Survey v1'
+#'
+#' @return raw_data with updated sites table
+wrangleUCBNDisturbances <- function(raw_data) {
+  raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, UnitCode:EventDate) %>%
+    dplyr::right_join(raw_data$data$Disturbances,
+                      by = "parentglobalid") %>%
+    # dplyr::mutate(Disturbance = ) %>% # expand out codes like ArborHist
+    dplyr::select(-parentglobalid, -globalid)
+
+  return(raw_data)
+}
