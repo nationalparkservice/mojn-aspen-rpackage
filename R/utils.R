@@ -391,3 +391,50 @@ wrangleUCBNObservations <- function(raw_data) {
 
   return(raw_data)
 }
+
+#' Wrangle UCBN pests table
+#'
+#' @param raw_data Data table returned by fetchagol::fetchRawData on 'UCBN Aspen Survey v1'
+#'
+#' @return raw_data with updated sites table
+wrangleUCBNPests <- function(raw_data) {
+  raw_data$data$Pests <- raw_data$data$Observations %>%
+    dplyr::select(parentglobalid = globalid, UnitCode:SpeciesName) %>%
+    dplyr::distinct() %>%
+    dplyr::right_join(raw_data$data$Pests,
+                      by = join_by("parentglobalid")) %>%
+    dplyr::mutate(
+      # EDIT: get lookups from Jeff
+      # Expand pest shorthands
+      Pest = dplyr::case_when(
+        Pest == "Borer" | Pest == "WoodBorer" ~ "Bark/Wood Boring Insect",
+        #Pest == "Cankers" ~ "Cankers",
+        Pest == "Defol" ~ "Defoliating Insect",
+        Pest == "FoliageD" ~ "Foliage Disease",
+        #Pest == "Gall" ~ "Gall",
+        Pest == "Mistletoe" ~ "Dwarf Mistletoe",
+        Pest == "MPineBeetle" ~ "Mountain Pine Beetle",
+        Pest == "StemDecay" ~ "Stem Decay",
+        Pest == "WPBRust" ~ "White Pine Blister Rust",
+        TRUE ~ Pest
+      ),
+      # Add pest evidence descriptions
+      PestDescription = dplyr::case_when(
+        Pest == "Bark/Wood Boring Insect" ~ "Entrance/exit holes in bark, frass.",
+        Pest == "Cankers" ~ "Lesions on bark, often with broken, callused, sooty, discolored, or weeping/bleeding bark. Fruiting bodies may be present or absent.",
+        Pest == "Defoliating Insect" ~ "Leaves partially or entirely eaten by insects, also larva droppings, leaves folded into shelters, silk.",
+        Pest == "Foliage Disease" ~ "Dark or discolored spots or patches on leaves, curled leaves, or leaves completely brown.",
+        Pest == "Gall" ~ "Irregularly swollen areas on twigs and branches.",
+        Pest == "Dwarf Mistletoe" ~ "Parasitic plant growing on conifer branches.",
+        Pest == "Mountain Pine Beetle" ~ "Pitch tubes, frass, J-shaped galleries under bark on pines.",
+        Pest == "Stem Decay" ~ "Fungal conks on stem.",
+        Pest == "White Pine Blister Rust" ~ "Cankers, swelling, broken bark, aecia, pitching, and chewing, on white pine species.",
+      )
+    ) %>%
+    dplyr::select(-parentglobalid, -globalid)
+
+  # Remove ID col from Observations tbl, not needed after join
+  raw_data$data$Observations["globalid"] <- NULL
+
+  return(raw_data)
+}
