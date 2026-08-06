@@ -8,18 +8,20 @@ pkg_globals <- new.env(parent = emptyenv())
 # Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
 globalVariables(c(
   # MOJN
-  "Community", "Disturbance", "DisturbanceCode", "EndTime", "Evaluation",
+  "Community", "Disturbance", "disturbanceCode", "EndTime", "Evaluation",
   "GRTSAssessment", "GeodeticDatum", "GlobalID", "Lat", "LegacyFrame",
-  "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "PestCodes",
+  "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "pestCodes",
   "ProtocolVersion", "Shift", "Site", "SiteDescription", "SpeciesCode",
-  "SpeciesName", "Stand_Height", "StartTime", "Stratum",
+  "SpeciesName", "Stand_Height", "StartTime", "Stratum", "Recorder",
   "VerbatimCoordinateSystem", "VerbatimCoordinates", "VerbatimSRS",
+  "verbatimCoordinateSystem", "verbatimCoordinates", "verbatimSRS",
   "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
   "aspect", "description","parentglobalid", "elevation", "globalid",
-  "grtsAssessment", "grtsOrder", "label", "lat", "long", "name", "park",
+  "grtsAssessment", "grtsOrder", "label", "lat", "Long", "name", "park",
   "parkName", "scientificName", "site", "slope", "speciesName",
   "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
-  "verbatimSrs", "visitDate",
+  "verbatimSrs", "eventDate", "FieldSeason", "siteID", "geodeticDatum",
+  "protocolVersion", "shift",
   # UCBN
   "Aspect", "AspectInDegrees", "Coord_Syst", "Elevation", "Loc_Name",
   "PlotNum", "Site_Height", "Slope", "Stand", "Transect", "UTM_Zone",
@@ -38,7 +40,7 @@ wrangleSites <- function(raw_data) {
     dplyr::rename_with(~ sub("_$", "", .x)) %>%
     dplyr::mutate(
       # Expand codes to differentiate between NA char and NA
-      Shift = dplyr::case_when(
+      shift = dplyr::case_when(
         Shift == "NA" ~ "Not Shifted",
         Shift == "S" ~ "South",
         Shift == "N" ~ "North",
@@ -46,19 +48,27 @@ wrangleSites <- function(raw_data) {
         Shift == "W" ~ "West",
         TRUE ~ Shift),
       # Format UTM coordinates using DWC column names
-      VerbatimCoordinates = dplyr::case_when(
+      verbatimCoordinates = dplyr::case_when(
         is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
         Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
         Park == "PARA" ~ paste0("12N ", Xcoord, "m E ", Ycoord, "m N")),
       # Add geographic info columns
-      VerbatimCoordinateSystem = "UTM",
-      VerbatimSRS = "EPSG:4269", # code for NAD83
-      GeodeticDatum = "EPSG:4326" # code for WGS84
+      verbatimCoordinateSystem = "UTM",
+      verbatimSRS = "EPSG:4269", # code for NAD83
+      geodeticDatum = "EPSG:4326" # code for WGS84
       ) %>%
-      dplyr::relocate(Shift, VerbatimCoordinateSystem, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, .before = Lat) %>%
-      dplyr::relocate(Stand_Height, .after = Zone) %>%
-      # Remove unnecessary columns
-      dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID)
+    dplyr::relocate(shift, verbatimCoordinateSystem, verbatimSRS, verbatimCoordinates, geodeticDatum, .before = Lat) %>%
+    dplyr::relocate(Stand_Height, .after = Zone) %>%
+    dplyr::rename(
+      # DWC names
+      decimalLatitude = Lat,
+      decimalLongitude = Long,
+      # Add units to column names
+      elevationInMeters = Elevation,
+      slopeInPercent = Slope,
+      aspectInDegrees = Aspect) %>%
+    # Remove unnecessary columns
+    dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID, -Shift)
 
   return(raw_data)
 }
@@ -79,14 +89,21 @@ wrangleSiteVisit <- function(raw_data) {
     dplyr::left_join(raw_data$metadata$SiteVisit$fields$ProtocolVersion$lookup$lookup_df %>%
                        dplyr::select(ProtocolVersion = name, label),
                      by = join_by(ProtocolVersion)) %>%
-    dplyr::mutate(VisitDate = as.Date(VisitDate),
-                  ProtocolVersion = label) %>%
+    dplyr::mutate(eventDate = as.Date(VisitDate),
+                  protocolVersion = label) %>%
     # Join site info from all sites tbl
     dplyr::left_join(raw_data$data$AllSites,
                      by = dplyr::join_by(Park, Site)) %>%
-    dplyr::relocate(Stratum, Zone, VisitDate, VisitType, .before = Observer) %>%
-    dplyr::relocate(Evaluation:GRTSAssessment, ProtocolVersion, Community, VisitNotes, .after = dplyr::last_col()) %>%
-    dplyr::select(-StartTime, -EndTime, -label, -parentglobalid)
+    dplyr::relocate(Stratum, Zone, eventDate, VisitType, FieldSeason, .before = Observer) %>%
+    dplyr::relocate(Evaluation:GRTSAssessment, protocolVersion, Community, VisitNotes, .after = dplyr::last_col()) %>%
+    dplyr::rename(
+      # CSO standard column names
+      unitCode = Park,
+      unitName = ParkName,
+      siteID = Site,
+      # DWC name
+      recordedBy = Recorder) %>%
+    dplyr::select(-StartTime, -EndTime, -label, -parentglobalid, -VisitDate, -ProtocolVersion)
 
   return(raw_data)
 }
@@ -99,15 +116,15 @@ wrangleSiteVisit <- function(raw_data) {
 wrangleDisturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitDate, VisitType, Community) %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
     dplyr::right_join(raw_data$data$Disturbances,
                       by = dplyr::join_by("parentglobalid")) %>%
-    dplyr::rename(DisturbanceCode = Disturbance) %>%
+    dplyr::rename(disturbanceCode = Disturbance) %>%
     # Expand disturbance codes
     dplyr::left_join(raw_data$metadata$Disturbances$fields$Disturbance$lookup$lookup_df %>%
-                       dplyr::select(DisturbanceCode = name, Disturbance = label),
-                     by = join_by(DisturbanceCode)) %>%
-    dplyr::select(-parentglobalid, -globalid, -DisturbanceCode)
+                       dplyr::select(disturbanceCode = name, disturbance = label),
+                     by = join_by(disturbanceCode)) %>%
+    dplyr::select(-parentglobalid, -globalid, -disturbanceCode)
 
   return(raw_data)
 }
@@ -120,36 +137,36 @@ wrangleDisturbances <- function(raw_data) {
 wrangleObservations <- function(raw_data) {
   # Join site visit info to observations tbl
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitDate, VisitType, Community) %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
     dplyr::right_join(raw_data$data$Observations,
                       by = dplyr::join_by("parentglobalid")) %>%
     # Expand species codes to show full scientific names
     dplyr::left_join(raw_data$metadata$Observations$fields$SpeciesCode$lookup$lookup_df %>%
-                       dplyr::mutate(SpeciesName = gsub("\\s*\\([^)]*\\)", "", label)),
+                       dplyr::mutate(speciesName = gsub("\\s*\\([^)]*\\)", "", label)),
                      by = join_by(SpeciesCode == name)) %>%
-    dplyr::relocate(SpeciesName, .after = SpeciesCode) %>%
+    dplyr::relocate(speciesName, .after = SpeciesCode) %>%
     # Pivot to tidy format
-    tidyr::pivot_longer(cols = dplyr::contains("Class"),
-                        names_to = "SizeClass",
-                        values_to = "IndividualCount") %>%
+    tidyr::pivot_longer(cols = dplyr::contains("class"),
+                        names_to = "sizeClass",
+                        values_to = "individualCount") %>%
     dplyr::mutate(
       # Display class sizes as roman numerals to match UCBN data and protocol
-      SizeClass = dplyr::case_when(
-        SizeClass == "Class1" ~ "Class I",
-        SizeClass == "Class2" ~ "Class II",
-        SizeClass == "Class3" ~ "Class III",
-        SizeClass == "Class4" ~ "Class IV",
-        SizeClass == "Class5" ~ "Class V",
-        SizeClass == "Class6" ~ "Class VI"
+      sizeClass = dplyr::case_when(
+        sizeClass == "Class1" ~ "Class I",
+        sizeClass == "Class2" ~ "Class II",
+        sizeClass == "Class3" ~ "Class III",
+        sizeClass == "Class4" ~ "Class IV",
+        sizeClass == "Class5" ~ "Class V",
+        sizeClass == "Class6" ~ "Class VI"
         ),
       # Add class descriptions
-      SizeClassDescription = dplyr::case_when(
-        SizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
-        SizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
-        SizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
-        SizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
-        SizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
-        SizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+      sizeClassDescription = dplyr::case_when(
+        sizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        sizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        sizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        sizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        sizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        sizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
         )) %>%
     dplyr::select(-parentglobalid, -label)
 
@@ -167,16 +184,16 @@ wrangleObservations <- function(raw_data) {
 wranglePests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
-    dplyr::select(parentglobalid = globalid, Park, ParkName, Site, VisitDate, VisitType, Community, SpeciesCode, SpeciesName) %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community, SpeciesCode, speciesName) %>%
     dplyr::distinct() %>%
     dplyr::right_join(raw_data$data$Pests,
                       by = join_by("parentglobalid")) %>%
-    dplyr::rename(PestCodes = Pest) %>%
+    dplyr::rename(pestCodes = Pest) %>%
     # Expand out shortened pest names
     dplyr::left_join(raw_data$metadata$Pests$fields$Pest$lookup$lookup_df %>%
-                       dplyr::select(PestCodes = name, Pest = label),
-                     by = join_by(PestCodes)) %>%
-    dplyr::select(-parentglobalid, -globalid, -PestCodes)
+                       dplyr::select(pestCodes = name, pest = label),
+                     by = join_by(pestCodes)) %>%
+    dplyr::select(-parentglobalid, -globalid, -pestCodes)
 
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
@@ -201,15 +218,16 @@ packageMOJNAspen <- function(aspen_data) {
     # Wrangling for all tbls
     tbl <- tbl %>%
       janitor::clean_names(case = "lower_camel") %>%
-      dplyr::rename(unitCode = park, # CSO standard
-                    unitName = parkName, # CSO standard
-                    siteID = site, # CSO standard
-                    eventDate = visitDate # DWC name
-                    ) %>%
-      dplyr::mutate(type = "Event", # DWC column
-                    basisOfRecord = "HumanObservation" # DWC column
-                    ) %>%
-      dplyr::relocate(unitName, .after = unitCode)
+      # Fix acronym capitalization
+      dplyr::rename(dplyr::any_of(c(siteID = "siteId",
+                                    verbatimSRS = "verbatimSrs",
+                                    GRTSAssessment = "grtsAssessment",
+                                    GRTSOrder = "grtsOrder"))) %>%
+      dplyr::mutate(
+        # DWC columns
+        type = "Event",
+        basisOfRecord = ifelse(nm == "SiteVisit", "Event", "HumanObservation")
+        )
 
     # Update taxonomy
     if("speciesName" %in% names(tbl)) {
@@ -224,19 +242,6 @@ packageMOJNAspen <- function(aspen_data) {
       tbl$scientificName[tbl$scientificName == "Pinus longeava"] <- "Pinus longaeva"
       }
 
-    # Update site visit tbl
-    if(nm == "SiteVisit") {
-      tbl <- tbl %>%
-        dplyr::rename(verbatimSRS = verbatimSrs, # DWC name
-                      decimalLatitude = lat, # DWC name
-                      decimalLongitude = long, # DWC name
-                      GRTSAssessment = grtsAssessment,
-                      elevationInMeters = elevation, # Add unit to col name
-                      slopeInPercent = slope, # Add unit to col name
-                      aspectInDegrees = aspect, # Add unit to col name
-                      GRTSOrder = grtsOrder) %>%
-        dplyr::mutate(basisOfRecord = "Event")
-      }
     return(tbl)
     })
   names(aspen_data$data) <- tbl_names
