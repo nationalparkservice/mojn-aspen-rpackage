@@ -139,9 +139,9 @@ wrangleObservations <- function(raw_data) {
                       by = dplyr::join_by("parentglobalid")) %>%
     # Expand species codes to show full scientific names
     dplyr::left_join(raw_data$metadata$Observations$fields$SpeciesCode$lookup$lookup_df %>%
-                       dplyr::mutate(speciesName = gsub("\\s*\\([^)]*\\)", "", label)),
+                       dplyr::mutate(verbatimIdentification = gsub("\\s*\\([^)]*\\)", "", label)),
                      by = join_by(SpeciesCode == name)) %>%
-    dplyr::relocate(speciesName, .after = SpeciesCode) %>%
+    dplyr::relocate(verbatimIdentification, .after = SpeciesCode) %>%
     # Pivot to tidy format
     tidyr::pivot_longer(cols = dplyr::contains("class"),
                         names_to = "sizeClass",
@@ -181,7 +181,7 @@ wrangleObservations <- function(raw_data) {
 wranglePests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
-    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community, SpeciesCode, speciesName) %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community, SpeciesCode, verbatimIdentification) %>%
     dplyr::distinct() %>%
     dplyr::right_join(raw_data$data$Pests,
                       by = join_by("parentglobalid")) %>%
@@ -210,6 +210,12 @@ packageMOJNAspen <- function(aspen_data) {
 
   tbl_names <- names(aspen_data$data)
 
+  # Resolve taxonomy to ITIS, GBIF
+  scinames <- taxize::gna_verifier(names = unique(aspen_data$data$Observations$verbatimIdentification), data_sources = c(3, 11)) %>%
+    dplyr::select(verbatimIdentification = submittedName, scientificName = matchedCanonicalSimple) %>%
+    # Correct name not caught by gna_verifier
+    dplyr::mutate(scientificName = ifelse(verbatimIdentification == "Pinus longeava", "Pinus longaeva", scientificName))
+
   aspen_data$data <- lapply(tbl_names, function(nm) {
     tbl <- aspen_data$data[[nm]]
     # Wrangling for all tbls
@@ -227,18 +233,14 @@ packageMOJNAspen <- function(aspen_data) {
         )
 
     # Update taxonomy
-    if("speciesName" %in% names(tbl)) {
+    if("verbatimIdentification" %in% names(tbl)) {
       tbl <- tbl %>%
-        dplyr::rename(verbatimIdentification = speciesName) %>%
-        dplyr::mutate(scientificName = dplyr::na_if(verbatimIdentification, "Unknown")) %>%
+        # Join resolved taxonomy
+        dplyr::left_join(scinames,
+                         by = "verbatimIdentification") %>%
         QCkit::get_taxon_rank("scientificName") %>%
         dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
-
-      # Hard code temporary fixes
-      tbl$scientificName[tbl$scientificName == "Cercocarpus ledifollius"] <- "Cercocarpus ledifolius"
-      tbl$scientificName[tbl$scientificName == "Pinus longeava"] <- "Pinus longaeva"
       }
-
     return(tbl)
     })
   names(aspen_data$data) <- tbl_names
