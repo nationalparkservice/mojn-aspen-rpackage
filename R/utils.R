@@ -17,13 +17,13 @@ globalVariables(c(
   "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
   "aspect", "description","parentglobalid", "elevation", "globalid",
   "grtsAssessment", "grtsOrder", "label", "lat", "Long", "name", "park",
-  "parkName", "scientificName", "site", "slope",
+  "parkName", "scientificName", "site", "slope", "submittedName",
   "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
   "verbatimSrs", "eventDate", "FieldSeason", "siteID", "geodeticDatum",
   "protocolVersion", "shift", "Aspect", "aspectInDegrees", "Coord_Syst",
   "Elevation", "Loc_Name", "PlotNum", "Site_Height", "Slope", "Stand",
   "Transect", "UTM_Zone", "Unique_ID", "decimalLatitude", "decimalLongitude",
-  "UnitCode", "cntClass6List", "sppSummaryCode"
+  "UnitCode", "cntClass6List", "sppSummaryCode", "matchedCanonicalSimple"
                 ))
 
 #' Wrangle sites table
@@ -442,4 +442,49 @@ wrangleUCBNPests <- function(raw_data) {
   raw_data$data$Observations["globalid"] <- NULL
 
   return(raw_data)
+}
+
+#' Format aspen data for data package publication
+#'
+#' @param aspen_data The wrangled UCBN aspen data
+#'
+#' @return aspen_data with data package formatting
+packageUCBNAspen <- function(aspen_data) {
+  # Remove metadata and unnecessary tbls from final data package
+  aspen_data$metadata <- NULL
+  aspen_data$data[c("begin_image_repeat", "Locations")] <- NULL
+
+  tbl_names <- names(aspen_data$data)
+
+  # Resolve taxonomy to ITIS, GBIF
+  scinames <- taxize::gna_verifier(names = unique(aspen_data$data$Observations$verbatimIdentification), data_sources = c(3, 11)) %>%
+    dplyr::select(verbatimIdentification = submittedName, scientificName = matchedCanonicalSimple)
+
+  aspen_data$data <- lapply(tbl_names, function(nm) {
+    tbl <- aspen_data$data[[nm]]
+    # Wrangling for all tbls
+    tbl <- tbl %>%
+      janitor::clean_names(case = "lower_camel") %>%
+      # Fix acronym capitalization
+      dplyr::rename(dplyr::any_of(c(siteID = "siteId",
+                                    verbatimSRS = "verbatimSrs"))) %>%
+      dplyr::mutate(
+        # DWC columns
+        type = "Event",
+        basisOfRecord = ifelse(nm == "SiteVisit", "Event", "HumanObservation")
+      )
+
+    # Update taxonomy
+    if("verbatimIdentification" %in% names(tbl)) {
+      tbl <- tbl %>%
+        # Join resolved taxonomy
+        dplyr::left_join(scinames,
+                         by = "verbatimIdentification") %>%
+        QCkit::get_taxon_rank("scientificName") %>%
+        dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
+    }
+    return(tbl)
+  })
+  names(aspen_data$data) <- tbl_names
+  return(aspen_data)
 }

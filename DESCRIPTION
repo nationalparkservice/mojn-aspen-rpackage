@@ -19,10 +19,11 @@ Imports:
     keyring,
     magrittr,
     QCkit,
+    taxize,
     tidyr,
     ucbn (>= 0.1.0)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Remotes:  
+Remotes: 
     wright13/ucbn-rpackage
