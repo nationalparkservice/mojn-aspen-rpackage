@@ -7,26 +7,23 @@ pkg_globals <- new.env(parent = emptyenv())
 
 # Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
 globalVariables(c(
-  # MOJN
   "Community", "Disturbance", "disturbanceCode", "EndTime", "Evaluation",
   "GRTSAssessment", "GeodeticDatum", "GlobalID", "Lat", "LegacyFrame",
   "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "pestCodes",
   "ProtocolVersion", "Shift", "Site", "SiteDescription", "SpeciesCode",
-  "SpeciesName", "Stand_Height", "StartTime", "Stratum", "Recorder",
+  "speciesName", "Stand_Height", "StartTime", "Stratum", "Recorder",
   "VerbatimCoordinateSystem", "VerbatimCoordinates", "VerbatimSRS",
   "verbatimCoordinateSystem", "verbatimCoordinates", "verbatimSRS",
   "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
   "aspect", "description","parentglobalid", "elevation", "globalid",
   "grtsAssessment", "grtsOrder", "label", "lat", "Long", "name", "park",
-  "parkName", "scientificName", "site", "slope", "speciesName",
+  "parkName", "scientificName", "site", "slope",
   "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
   "verbatimSrs", "eventDate", "FieldSeason", "siteID", "geodeticDatum",
-  "protocolVersion", "shift",
-  # UCBN
-  "Aspect", "AspectInDegrees", "Coord_Syst", "Elevation", "Loc_Name",
-  "PlotNum", "Site_Height", "Slope", "Stand", "Transect", "UTM_Zone",
-  "Unique_ID", "UnitName", "decimalLatitude", "decimalLongitude",
-  "EventDate", "UnitCode", "cntClass6List", "sppSummaryCode"
+  "protocolVersion", "shift", "Aspect", "aspectInDegrees", "Coord_Syst",
+  "Elevation", "Loc_Name", "PlotNum", "Site_Height", "Slope", "Stand",
+  "Transect", "UTM_Zone", "Unique_ID", "decimalLatitude", "decimalLongitude",
+  "UnitCode", "cntClass6List", "sppSummaryCode"
                 ))
 
 #' Wrangle sites table
@@ -298,10 +295,10 @@ wrangleUCBNSites <- function(raw_data) {
     QCkit::generate_ll_from_utm(EastingCol = "X_Coord", NorthingCol = "Y_Coord", ZoneCol = "UTM_Zone", DatumCol = "Datum", latlong_datum = "WGS84") %>%
     dplyr::mutate(
       # Format UTM coordinates using DWC column names
-      VerbatimCoordinates = ifelse(is.na(.data$X_Coord) | is.na(.data$Y_Coord), NA_character_, paste0(UTM_Zone, " ", .data$X_Coord, "m E ", .data$Y_Coord, "m N")),
+      verbatimCoordinates = ifelse(is.na(.data$X_Coord) | is.na(.data$Y_Coord), NA_character_, paste0(UTM_Zone, " ", .data$X_Coord, "m E ", .data$Y_Coord, "m N")),
       # Add geographic info columns
-      VerbatimSRS = "EPSG:4269", # code for NAD83
-      GeodeticDatum = "EPSG:4326", # code for WGS84
+      verbatimSRS = "EPSG:4269", # code for NAD83
+      geodeticDatum = "EPSG:4326", # code for WGS84
       # Add wkid column for lat long coordinates for use in generating elevation, aspect, slope
       # From ESRI Developer: 4326 is generally assumed to be the spatial reference when talking about "latitude" or "longitude"
       # (https://developers.arcgis.com/documentation/spatial-references/)
@@ -309,7 +306,7 @@ wrangleUCBNSites <- function(raw_data) {
     ) %>%
     # Get elevation, aspect, slope from AGOL
     ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = "mojn_data") %>%
-    dplyr::select(Loc_Name, VerbatimCoordinateSystem = Coord_Syst, VerbatimSRS, VerbatimCoordinates, GeodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
+    dplyr::select(Loc_Name, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
 
   return(raw_data)
 }
@@ -323,20 +320,20 @@ wrangleUCBNSiteVisist <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
     dplyr::mutate(
       # Expand park names
-      UnitName = dplyr::case_when(
+      unitName = dplyr::case_when(
         Park == "CIRO" ~ "City of Rocks National Reserve",
         Park == "CRMO" ~ "Craters of the Moon National Monument and Preserve"),
       # Format date
-      VisitDate = format(as.POSIXct(as.numeric(VisitDate) / 1000, origin = "1970-01-01"), "%Y-%m-%d"),
+      eventDate = as.Date(VisitDate),
       # Expand protocol version code to match value in Access data
-      ProtocolVersion = ifelse(ProtocolVersion == 1, "ASPN_1_0", ProtocolVersion)) %>%
-    dplyr::relocate(UnitName, .after = Park) %>%
+      protocolVersion = ifelse(ProtocolVersion == 1, "ASPN_1_0", ProtocolVersion)) %>%
+    dplyr::relocate(unitName, .after = Park) %>%
     dplyr::left_join(raw_data$data$Locations,
                      by = join_by(Unique_ID == Loc_Name)) %>%
     # Order cols
-    dplyr::select(globalid, UnitCode = Park, UnitName, Stand, Transect, PlotNumber = PlotNum,
-                  PlotName = Unique_ID, EventDate = VisitDate, StandHeightInMeters = Site_Height,
-                  VerbatimCoordinateSystem:AspectInDegrees, ProtocolVersion, VisitNotes)
+    dplyr::select(globalid, unitCode = Park, unitName, Stand, Transect, plotNumber = PlotNum,
+                  plotName = Unique_ID, eventDate, standHeightInMeters = Site_Height,
+                  verbatimCoordinateSystem:aspectInDegrees, protocolVersion, VisitNotes)
 
   return(raw_data)
 }
@@ -348,7 +345,7 @@ wrangleUCBNSiteVisist <- function(raw_data) {
 #' @return raw_data with updated sites table
 wrangleUCBNDisturbances <- function(raw_data) {
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, UnitCode:EventDate) %>%
+    dplyr::select(parentglobalid = globalid, unitCode:eventDate) %>%
     dplyr::right_join(raw_data$data$Disturbances,
                       by = "parentglobalid") %>%
     # dplyr::mutate(Disturbance = ) %>% # expand out codes like ArborHist
@@ -364,35 +361,38 @@ wrangleUCBNDisturbances <- function(raw_data) {
 #' @return raw_data with updated sites table
 wrangleUCBNObservations <- function(raw_data) {
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, UnitCode:EventDate) %>%
+    dplyr::select(parentglobalid = globalid, unitCode:eventDate) %>%
     dplyr::right_join(raw_data$data$Observations,
                       by = "parentglobalid") %>%
     # Isolate species name
-    dplyr::mutate(SpeciesName = gsub("\\s*\\([^)]*\\)", "", sppSummaryCode)) %>%
+    dplyr::mutate(verbatimIdentification = gsub("\\s*\\([^)]*\\)", "", sppSummaryCode)) %>%
     dplyr::select(-parentglobalid, -(sppSummaryCode:cntClass6List)) %>%
     # Pivot to tidy format
-    tidyr::pivot_longer(cols = dplyr::contains("Class"),
-                        names_to = "SizeClass",
-                        values_to = "IndividualCount") %>%
+    tidyr::pivot_longer(cols = dplyr::contains("class"),
+                        names_to = "sizeClass",
+                        values_to = "individualCount") %>%
     dplyr::mutate(
       # Display class sizes as roman numerals to match UCBN data and protocol
-      SizeClass = dplyr::case_when(
-        SizeClass == "Class1" ~ "Class I",
-        SizeClass == "Class2" ~ "Class II",
-        SizeClass == "Class3" ~ "Class III",
-        SizeClass == "Class4" ~ "Class IV",
-        SizeClass == "Class5" ~ "Class V",
-        SizeClass == "Class6" ~ "Class VI"
+      sizeClass = dplyr::case_when(
+        sizeClass == "Class1" ~ "Class I",
+        sizeClass == "Class2" ~ "Class II",
+        sizeClass == "Class3" ~ "Class III",
+        sizeClass == "Class4" ~ "Class IV",
+        sizeClass == "Class5" ~ "Class V",
+        sizeClass == "Class6" ~ "Class VI"
       ),
       # Add class descriptions
-      SizeClassDescription = dplyr::case_when(
-        SizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
-        SizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
-        SizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
-        SizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
-        SizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
-        SizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+      sizeClassDescription = dplyr::case_when(
+        sizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        sizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        sizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        sizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        sizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        sizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
       ))
+
+  # Remove ID col from SiteVisit tbl, not needed after join
+  raw_data$data$SiteVisit["globalid"] <- NULL
 
   return(raw_data)
 }
@@ -404,14 +404,14 @@ wrangleUCBNObservations <- function(raw_data) {
 #' @return raw_data with updated sites table
 wrangleUCBNPests <- function(raw_data) {
   raw_data$data$Pests <- raw_data$data$Observations %>%
-    dplyr::select(parentglobalid = globalid, UnitCode:SpeciesName) %>%
+    dplyr::select(parentglobalid = globalid, unitCode:verbatimIdentification) %>%
     dplyr::distinct() %>%
     dplyr::right_join(raw_data$data$Pests,
                       by = join_by("parentglobalid")) %>%
     dplyr::mutate(
       # Temporary hard codes - get lookups from Jeff
       # Expand pest shorthands
-      Pest = dplyr::case_when(
+      pest = dplyr::case_when(
         Pest == "Borer" | Pest == "WoodBorer" ~ "Bark/Wood Boring Insect",
         #Pest == "Cankers" ~ "Cankers",
         Pest == "Defol" ~ "Defoliating Insect",
@@ -424,19 +424,19 @@ wrangleUCBNPests <- function(raw_data) {
         TRUE ~ Pest
       ),
       # Add pest evidence descriptions
-      PestDescription = dplyr::case_when(
-        Pest == "Bark/Wood Boring Insect" ~ "Entrance/exit holes in bark, frass.",
-        Pest == "Cankers" ~ "Lesions on bark, often with broken, callused, sooty, discolored, or weeping/bleeding bark. Fruiting bodies may be present or absent.",
-        Pest == "Defoliating Insect" ~ "Leaves partially or entirely eaten by insects, also larva droppings, leaves folded into shelters, silk.",
-        Pest == "Foliage Disease" ~ "Dark or discolored spots or patches on leaves, curled leaves, or leaves completely brown.",
-        Pest == "Gall" ~ "Irregularly swollen areas on twigs and branches.",
-        Pest == "Dwarf Mistletoe" ~ "Parasitic plant growing on conifer branches.",
-        Pest == "Mountain Pine Beetle" ~ "Pitch tubes, frass, J-shaped galleries under bark on pines.",
-        Pest == "Stem Decay" ~ "Fungal conks on stem.",
-        Pest == "White Pine Blister Rust" ~ "Cankers, swelling, broken bark, aecia, pitching, and chewing, on white pine species.",
+      pestDescription = dplyr::case_when(
+        pest == "Bark/Wood Boring Insect" ~ "Entrance/exit holes in bark, frass.",
+        pest == "Cankers" ~ "Lesions on bark, often with broken, callused, sooty, discolored, or weeping/bleeding bark. Fruiting bodies may be present or absent.",
+        pest == "Defoliating Insect" ~ "Leaves partially or entirely eaten by insects, also larva droppings, leaves folded into shelters, silk.",
+        pest == "Foliage Disease" ~ "Dark or discolored spots or patches on leaves, curled leaves, or leaves completely brown.",
+        pest == "Gall" ~ "Irregularly swollen areas on twigs and branches.",
+        pest == "Dwarf Mistletoe" ~ "Parasitic plant growing on conifer branches.",
+        pest == "Mountain Pine Beetle" ~ "Pitch tubes, frass, J-shaped galleries under bark on pines.",
+        pest == "Stem Decay" ~ "Fungal conks on stem.",
+        pest == "White Pine Blister Rust" ~ "Cankers, swelling, broken bark, aecia, pitching, and chewing, on white pine species.",
       )
     ) %>%
-    dplyr::select(-parentglobalid, -globalid)
+    dplyr::select(-parentglobalid, -globalid, -Pest)
 
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
