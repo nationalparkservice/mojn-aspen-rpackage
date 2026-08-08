@@ -490,3 +490,42 @@ packageUCBNAspen <- function(aspen_data) {
   names(aspen_data$data) <- tbl_names
   return(aspen_data)
 }
+
+#' Fetch, wrangle, and package UCBN aspen data from AGOL
+#'
+#' @param aspen_url URL to MOJN_Aspen_Database on AGOL
+#' @param site_url URL to MOJN_Aspen_Sites_Master on AGOL
+#' @param agol_username AGOL headless account username
+#' @param agol_password AGOL headless account password (do not hard code this into your scripts!)
+#'
+#' @return A list of aspen data frames in data package format
+#' @export
+loadAndWrangleUCBNAspen <- function(
+    aspen_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/survey123_11607b1ef8eb4a3397b6686acf61b9d2_results/FeatureServer",
+    site_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/UCBN_Aspen_Locations_pt_20210430/FeatureServer",
+    agol_username = "mojn_data",
+    agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
+
+  # Import aspen db and sites tbl
+  raw_data <- fetchagol::fetchRawData(aspen_url, agol_username, agol_password)
+  raw_site_data <- fetchagol::fetchRawData(site_url, agol_username, agol_password, include_metadata = FALSE) # if ucbn
+
+  # Combine for processing
+  raw_data$data$Locations <- raw_site_data$data$UCBN_Aspen_Locations_pt_20210430
+
+  # wrangle each table
+  aspen_data <- raw_data %>%
+    fetchagol::cleanData(cols_to_remove =
+                           grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)) %>%
+    wrangleUCBNSites() %>%
+    wrangleUCBNSiteVisist() %>%
+    wrangleUCBNDisturbances() %>%
+    wrangleUCBNObservations() %>%
+    wrangleUCBNPests() %>%
+    packageUCBNAspen()
+
+  # Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
+  assign("ucbn_aspen_data", aspen_data, envir = pkg_globals)
+  invisible(aspen_data)
+
+}
