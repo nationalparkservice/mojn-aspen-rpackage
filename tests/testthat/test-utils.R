@@ -80,6 +80,18 @@ test_that("wrangleObservations works", {
   expect_false("globalid" %in% names(mojn_wrangled_observations$data$SiteVisit))
   })
 
+# wranglePests
+test_that("wranglePests works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wranglePests, MOJN data for testing wrangle functions not available.")
+  mojn_wrangled_pests <- mojn_wrangled %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances() %>% wrangleObservations() %>% wranglePests()
+
+  # Test column additions/renames are present
+  expect_true(all(c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "SpeciesCode", "verbatimIdentification", "pest") %in% names(mojn_wrangled_pests$data$Pests)))
+
+  # Test that col globalid is removed from observations tbl
+  expect_false("globalid" %in% names(mojn_wrangled_pests$data$Observations))
+})
+
 # MOJN loadAndWrangle tests ----
 # Read in saved load and wrangle output
 mojn_loaded_wrangled <- test_path("mojn_loaded_wrangled.rds")
