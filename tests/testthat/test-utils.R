@@ -35,6 +35,19 @@ test_that("wrangleSites works", {
                     "decimalLatitude", "decimalLongitude", "elevationInMeters", "slopeInPercent", "aspectInDegrees") %in% names(mojn_wrangled_sites$data$AllSites)))
 })
 
+# wrangleSiteVisit
+test_that("wrangleSiteVisit works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSiteVisit, MOJN data for testing wrangle functions not available.")
+  mojn_wrangled_sitevisit <- mojn_wrangled %>% wrangleSites() %>% wrangleSiteVisit()
+
+  # Test that park codes and protocol version values are expanded
+  expect_true(all(unique(mojn_wrangled_sitevisit$data$SiteVisit$protocolVersion) %in% c("Aspen PIP 1.0", NA_character_))) # only 1 value in lookup tbl
+  expect_true(all(unique(mojn_wrangled_sitevisit$data$SiteVisit$unitName) %in% c("Great Basin National Park", "Grand Canyon-Parashant National Monument", NA_character_)))
+
+  # Test column additions/renames are present
+  joined_names <- lubridate::setdiff(names(mojn_wrangled_sitevisit$data$AllSites), c("Park", "Site", "ParkName"))
+  expect_true(all(c(joined_names, "eventDate", "protocolVersion", "unitCode", "unitName", "siteID", "recordedBy") %in% names(mojn_wrangled_sitevisit$data$SiteVisit)))
+  })
 
 # MOJN loadAndWrangle tests ----
 # Read in saved load and wrangle output
