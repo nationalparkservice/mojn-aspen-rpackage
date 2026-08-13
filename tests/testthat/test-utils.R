@@ -61,6 +61,25 @@ test_that("wrangleDisturbances works", {
   expect_true(all(c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "disturbance") %in% names(mojn_wrangled_disturbance$data$Disturbance)))
   })
 
+# wrangleObservations
+test_that("wrangleObservations works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleObservations, MOJN data for testing wrangle functions not available.")
+  mojn_wrangled_observations <- mojn_wrangled %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances() %>% wrangleObservations()
+
+  # Test column additions/renames are present
+  expect_true(all(c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "verbatimIdentification",
+                    "sizeClass", "individualCount", "sizeClassDescription") %in% names(mojn_wrangled_observations$data$Observations)))
+
+  # Test expanding size classes and sci names
+  expect_true(all(c("Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI") %in% unique(mojn_wrangled_observations$data$Observations$sizeClass)))
+  expect_false(any(is.na(mojn_wrangled_observations$data$Observations$sizeClass)))
+  expect_false(any(is.na(mojn_wrangled_observations$data$Observations$sizeClassDescription)))
+  expect_false(any(stringr::str_detect(unique(mojn_wrangled_observations$data$Observations$verbatimIdentification), "\\(|\\)")))
+
+  # Test that col globalid is removed from SiteVisits tbl
+  expect_false("globalid" %in% names(mojn_wrangled_observations$data$SiteVisit))
+  })
+
 # MOJN loadAndWrangle tests ----
 # Read in saved load and wrangle output
 mojn_loaded_wrangled <- test_path("mojn_loaded_wrangled.rds")
