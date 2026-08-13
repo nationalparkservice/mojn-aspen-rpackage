@@ -49,6 +49,18 @@ test_that("wrangleSiteVisit works", {
   expect_true(all(c(joined_names, "eventDate", "protocolVersion", "unitCode", "unitName", "siteID", "recordedBy") %in% names(mojn_wrangled_sitevisit$data$SiteVisit)))
   })
 
+# wrangleDisturbance
+test_that("wrangleDisturbances works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleDisturbances, MOJN data for testing wrangle functions not available.")
+  mojn_wrangled_disturbance <- mojn_wrangled %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances()
+
+  # Test that disturbance codes are expanded
+  expect_true(all(unique(mojn_wrangled_disturbance$data$Disturbance$disturbance) %in% c("Antler rubbing", "Fire", "Livestock grazing", "Wildlife grazing", "Arborglyph", NA_character_)))
+
+  # Test column additions/renames are present
+  expect_true(all(c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "disturbance") %in% names(mojn_wrangled_disturbance$data$Disturbance)))
+  })
+
 # MOJN loadAndWrangle tests ----
 # Read in saved load and wrangle output
 mojn_loaded_wrangled <- test_path("mojn_loaded_wrangled.rds")
