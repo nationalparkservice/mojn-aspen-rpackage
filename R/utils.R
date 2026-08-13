@@ -43,16 +43,16 @@ wrangleSites <- function(raw_data) {
         Shift == "N" ~ "North",
         Shift == "E" ~ "East",
         Shift == "W" ~ "West",
-        TRUE ~ Shift),
+        TRUE ~ NA_character_),
       # Format UTM coordinates using DWC column names
       verbatimCoordinates = dplyr::case_when(
         is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
         Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
         Park == "PARA" ~ paste0("12N ", Xcoord, "m E ", Ycoord, "m N")),
       # Add geographic info columns
-      verbatimCoordinateSystem = "UTM",
-      verbatimSRS = "EPSG:4269", # code for NAD83
-      geodeticDatum = "EPSG:4326" # code for WGS84
+      verbatimCoordinateSystem = ifelse(!is.na(verbatimCoordinates), "UTM", NA_character_),
+      verbatimSRS = ifelse(!is.na(verbatimCoordinates), "EPSG:4269", NA_character_), # code for NAD83
+      geodeticDatum = ifelse(!is.na(verbatimCoordinates), "EPSG:4326", NA_character_) # code for WGS84
       ) %>%
     dplyr::relocate(shift, verbatimCoordinateSystem, verbatimSRS, verbatimCoordinates, geodeticDatum, .before = Lat) %>%
     dplyr::relocate(Stand_Height, .after = Zone) %>%
@@ -61,6 +61,7 @@ wrangleSites <- function(raw_data) {
       decimalLatitude = Lat,
       decimalLongitude = Long,
       # Add units to column names
+      standHeightInMeters = Stand_Height,
       elevationInMeters = Elevation,
       slopeInPercent = Slope,
       aspectInDegrees = Aspect) %>%
