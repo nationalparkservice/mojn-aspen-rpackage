@@ -23,6 +23,7 @@ Imports:
     tidyr,
     ucbn (>= 0.1.0)
 Suggests: 
+    stringr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Remotes: 
