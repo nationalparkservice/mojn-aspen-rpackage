@@ -300,8 +300,8 @@ wrangleUCBNSites <- function(raw_data) {
       # Format UTM coordinates using DWC column names
       verbatimCoordinates = ifelse(is.na(.data$X_Coord) | is.na(.data$Y_Coord), NA_character_, paste0(UTM_Zone, " ", .data$X_Coord, "m E ", .data$Y_Coord, "m N")),
       # Add geographic info columns
-      verbatimSRS = "EPSG:4269", # code for NAD83
-      geodeticDatum = "EPSG:4326", # code for WGS84
+      verbatimSRS = ifelse(!is.na(verbatimCoordinates), "EPSG:4269", NA_character_), # code for NAD83
+      geodeticDatum = ifelse(!is.na(verbatimCoordinates), "EPSG:4326", NA_character_), # code for WGS84
       # Add wkid column for lat long coordinates for use in generating elevation, aspect, slope
       # From ESRI Developer: 4326 is generally assumed to be the spatial reference when talking about "latitude" or "longitude"
       # (https://developers.arcgis.com/documentation/spatial-references/)
@@ -319,7 +319,7 @@ wrangleUCBNSites <- function(raw_data) {
 #' @param raw_data Data table returned by fetchagol::fetchRawData on 'UCBN Aspen Survey v1'
 #'
 #' @return raw_data with updated sites table
-wrangleUCBNSiteVisist <- function(raw_data) {
+wrangleUCBNSiteVisit <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
     dplyr::mutate(
       # Expand park names
@@ -519,7 +519,7 @@ loadAndWrangleUCBNAspen <- function(
     fetchagol::cleanData(cols_to_remove =
                            grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)) %>%
     wrangleUCBNSites() %>%
-    wrangleUCBNSiteVisist() %>%
+    wrangleUCBNSiteVisit() %>%
     wrangleUCBNDisturbances() %>%
     wrangleUCBNObservations() %>%
     wrangleUCBNPests() %>%
