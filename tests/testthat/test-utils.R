@@ -91,6 +91,31 @@ test_that("wranglePests works", {
   expect_false("globalid" %in% names(mojn_wrangled_pests$data$Observations))
 })
 
+# packageMOJNAspen
+test_that("packageMOJNAspen works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for packageMOJNAspen, MOJN data for testing wrangle and package functions not available.")
+  mojn_packaged <- mojn_wrangled %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances() %>% wrangleObservations() %>% wranglePests() %>% packageMOJNAspen()
+
+  # Test removal of metadata and sites tbl
+  expect_false("metadata" %in% names(mojn_packaged))
+  expect_false("AllSites" %in% names(mojn_packaged$data))
+
+  # Test column additions/renames
+  for (tbl_name in names(mojn_packaged$data)) {
+    tbl <- mojn_packaged$data[[tbl_name]]
+
+    expect_contains(names(tbl), c("type", "basisOfRecord", "siteID"))
+    basisOfRecord_value <- ifelse(tbl_name == "SiteVisit", "Event", "HumanObservation")
+    expect_all_true(tbl$basisOfRecord == basisOfRecord_value)
+  }
+
+  # Test taxonomy changes
+  for (tbl in c("Observations", "Pests")) {
+    expect_all_true(c("verbatimIdentification", "scientificName", "taxonRank") %in% names(mojn_packaged$data[[tbl]]))
+    expect_false("Pinus longeava" %in% unique(mojn_packaged$data[[tbl]]$scientificName))
+  }
+})
+
 # MOJN loadAndWrangle tests ----
 # Read in saved load and wrangle output
 mojn_loaded_wrangled <- test_path("mojn_loaded_wrangled.rds")
