@@ -412,7 +412,7 @@ wrangleUCBNPests <- function(raw_data) {
     dplyr::right_join(raw_data$data$Pests,
                       by = join_by("parentglobalid")) %>%
     dplyr::mutate(
-      # Temporary hard codes - get lookups from Jeff
+      # Temporary hard codes - get lookups from Devin
       # Expand pest shorthands
       pest = dplyr::case_when(
         Pest == "Borer" | Pest == "WoodBorer" ~ "Bark/Wood Boring Insect",

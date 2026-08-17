@@ -70,7 +70,7 @@ test_that("wrangleObservations works", {
   expect_setequal(unique(mojn_wrangled_observations$data$Observations$sizeClass), c("Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI"))
   expect_false(any(is.na(mojn_wrangled_observations$data$Observations$sizeClass)))
   expect_false(any(is.na(mojn_wrangled_observations$data$Observations$sizeClassDescription)))
-  expect_false(any(stringr::str_detect(unique(mojn_wrangled_observations$data$Observations$verbatimIdentification), "\\(|\\)")))
+  expect_false(any(stringr::str_detect(unique(mojn_wrangled_observations$data$Observations$verbatimIdentification), "\\(|\\)"), na.rm = TRUE))
 
   # Test column additions/renames are present
   expect_contains(names(mojn_wrangled_observations$data$Observations), c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "verbatimIdentification", "sizeClass", "individualCount", "sizeClassDescription"))
@@ -165,4 +165,46 @@ test_that("wrangleUCBNSiteVisit works", {
 
   # Test column additions/renames are present
   expect_contains(names(ucbn_wrangled_sitevisit$data$SiteVisit), c("globalid", "unitCode", "unitName", "Stand", "Transect", "plotNumber", "plotName", "eventDate", "standHeightInMeters", "verbatimCoordinateSystem", "aspectInDegrees", "protocolVersion", "VisitNotes"))
+})
+
+# wrangleUCBNDisturbances
+test_that("wrangleUCBNDisturbances works", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNDisturbances, UCBN data for testing wrangle functions not available.")
+  ucbn_wrangled_disturbance <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit() %>% wrangleUCBNDisturbances()
+
+  # Test column additions/renames are present
+  expect_contains(names(ucbn_wrangled_disturbance$data$Disturbance), c("unitCode", "unitName", "Stand", "Transect", "plotNumber", "plotName", "eventDate", "Disturbance"))
+})
+
+# wrangleUCBNObservations
+test_that("wrangleUCBNObservations works", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNObservations, UCBN data for testing wrangle functions not available.")
+  ucbn_wrangled_observations <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit() %>% wrangleUCBNDisturbances() %>% wrangleUCBNObservations()
+
+  # Test expanding size classes and sci names
+  expect_setequal(unique(ucbn_wrangled_observations$data$Observations$sizeClass), c("Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI"))
+  expect_false(any(is.na(ucbn_wrangled_observations$data$Observations$sizeClass)))
+  expect_false(any(is.na(ucbn_wrangled_observations$data$Observations$sizeClassDescription)))
+  expect_false(any(stringr::str_detect(unique(ucbn_wrangled_observations$data$Observations$verbatimIdentification), "\\(|\\)"), na.rm = TRUE))
+
+  # Test column additions/renames are present
+  expect_contains(names(ucbn_wrangled_observations$data$Observations), c("unitCode", "unitName", "Stand", "Transect", "plotNumber", "plotName", "eventDate", "verbatimIdentification", "sizeClass", "individualCount", "sizeClassDescription"))
+
+  # Test that col globalid is removed from SiteVisits tbl
+  expect_false("globalid" %in% names(ucbn_wrangled_observations$data$SiteVisit))
+})
+
+# wrangleUCBNPests
+test_that("wrangleUCBNObservations works", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNObservations, UCBN data for testing wrangle functions not available.")
+  ucbn_wrangled_pests <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit() %>% wrangleUCBNDisturbances() %>% wrangleUCBNObservations() %>% wrangleUCBNPests()
+
+  # Test pest code expansions
+  expect_all_true(unique(ucbn_wrangled_pests$data$Pests$pest) %in% c("Cankers", "Bark/Wood Boring Insect", "Defoliating Insect", "Foliage Disease", "Dwarf Mistletoe", "Mountain Pine Beetle", "Stem Decay", "White Pine Blister Rust"))
+
+  # Test column additions/renames are present
+  expect_contains(names(ucbn_wrangled_pests$data$Pests), c("unitCode", "unitName", "Stand", "Transect", "plotNumber", "plotName", "eventDate", "verbatimIdentification", "pest", "pestDescription"))
+
+  # Test that col globalid is removed from observations tbl
+  expect_false("globalid" %in% names(ucbn_wrangled_pests$data$Observations))
 })
