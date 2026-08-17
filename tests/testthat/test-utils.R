@@ -147,9 +147,22 @@ if (file.exists(ucbn_wrangle_test_data)) {
 
 # wrangleUCBNSites
 test_that("wrangleUCBNSites works", {
-  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNSites, ucbn data for testing wrangle functions not available.")
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNSites, UCBN data for testing wrangle functions not available.")
   ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_data)
 
   # Test column additions/renames are present
   expect_equal(names(ucbn_wrangled_sites$data$Locations), c("Loc_Name", "verbatimCoordinateSystem", "verbatimSRS", "verbatimCoordinates", "geodeticDatum", "decimalLatitude", "decimalLongitude", "elevationInMeters", "slopeInPercent", "aspectInDegrees"))
+})
+
+# wrangleUCBNSiteVisist
+test_that("wrangleUCBNSiteVisit works", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNSiteVisit, UCBN data for testing wrangle functions not available.")
+  ucbn_wrangled_sitevisit <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit()
+
+  # Test codes expanded
+  expect_true(unique(ucbn_wrangled_sitevisit$data$SiteVisit$unitName) %in% c("City of Rocks National Reserve", "Craters of the Moon National Monument and Preserve"))
+  expect_true(unique(ucbn_wrangled_sitevisit$data$SiteVisit$protocolVersion) %in% "ASPN_1_0")
+
+  # Test column additions/renames are present
+  expect_contains(names(ucbn_wrangled_sitevisit$data$SiteVisit), c("globalid", "unitCode", "unitName", "Stand", "Transect", "plotNumber", "plotName", "eventDate", "standHeightInMeters", "verbatimCoordinateSystem", "aspectInDegrees", "protocolVersion", "VisitNotes"))
 })
