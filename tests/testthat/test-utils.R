@@ -1,5 +1,4 @@
-
-# MOJN Wrangle and Package function tests ----
+# MOJN tests ----
 # Read in saved MOJN data for testing - object has both db and sites tbls and went through fetchagol::cleanData()
 mojn_wrangle_test_data <- test_path("mojn_wrangle_test_data.rds")
 
@@ -117,16 +116,9 @@ test_that("packageMOJNAspen works", {
   }
 })
 
-# MOJN loadAndWrangle tests ----
-# Read in saved load and wrangle output
-mojn_loaded_wrangled <- test_path("mojn_loaded_wrangled.rds")
-
-if (file.exists(mojn_loaded_wrangled)) {
-  mojn_output <- readRDS(mojn_loaded_wrangled)
-}
-
+# loadAndWrangleMOJNAspen
 test_that("loadAndWrangleMOJNAspen() works", {
-  skip_if_not(file.exists(mojn_loaded_wrangled), "Skipping tests for loadAndWrangleMOJNAspen, MOJN data for testing not available.")
+  mojn_output <- loadAndWrangleMOJNAspen()
 
   # Test that fx only returns data
   expect_equal(names(mojn_output), "data")
@@ -138,8 +130,8 @@ test_that("loadAndWrangleMOJNAspen() works", {
   lapply(mojn_output$data, expect_s3_class, "data.frame")
 })
 
-# UCBN Wrangle and Package function tests ----
-# Read in saved MOJN data for testing - object has both db and sites tbls and went through fetchagol::cleanData()
+# UCBN tests ----
+# Read in saved UCBN data for testing - object has both db and sites tbls and went through fetchagol::cleanData()
 ucbn_wrangle_test_data <- test_path("ucbn_wrangle_test_data.rds")
 
 if (file.exists(ucbn_wrangle_test_data)) {
@@ -211,4 +203,41 @@ test_that("wrangleUCBNObservations works", {
 
   # Test that col globalid is removed from observations tbl
   expect_false("globalid" %in% names(ucbn_wrangled_pests$data$Observations))
+})
+
+# packageUCBNAspen
+test_that("packageUCBNAspen works", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for packageUCBNAspen, UCBN data for testing wrangle and package functions not available.")
+
+  # Test removal of metadata and tbls
+  expect_equal(names(ucbn_packaged), "data")
+  expect_all_false(c("begin_image_repeat", "Locations") %in% names(ucbn_packaged$data))
+
+  # Test column additions/renames
+  for (tbl_name in names(ucbn_packaged$data)) {
+    tbl <- ucbn_packaged$data[[tbl_name]]
+
+    expect_contains(names(tbl), c("type", "basisOfRecord"))
+    basisOfRecord_value <- ifelse(tbl_name == "SiteVisit", "Event", "HumanObservation")
+    expect_all_true(tbl$basisOfRecord == basisOfRecord_value)
+  }
+
+  # Test taxonomy changes
+  for (tbl in c("Observations", "Pests")) {
+    expect_all_true(c("verbatimIdentification", "scientificName", "taxonRank") %in% names(ucbn_packaged$data[[tbl]]))
+  }
+})
+
+# loadAndWrangleUCBNAspen
+test_that("loadAndWrangleUCBNAspen works", {
+  ucbn_output <- loadAndWrangleUCBNAspen()
+
+  # Test that fx only returns data
+  expect_equal(names(ucbn_output), "data")
+
+  # Test that dataframes have expected names
+  expect_named(ucbn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+
+  # Test that all are dataframes
+  lapply(ucbn_output$data, expect_s3_class, "data.frame")
 })
