@@ -5,12 +5,19 @@ mojn_wrangle_test_data <- test_path("mojn_wrangle_test_data.rds")
 
 if (file.exists(mojn_wrangle_test_data)) {
   mojn_data <- readRDS(mojn_wrangle_test_data)
+
+  # Create data for testing each fx
+  mojn_wrangled_sites <- wrangleSites(mojn_data)
+  mojn_wrangled_sitevisit <- wrangleSiteVisit(mojn_wrangled_sites)
+  mojn_wrangled_disturbance <- wrangleDisturbances(mojn_wrangled_sitevisit)
+  mojn_wrangled_observations <- wrangleObservations(mojn_wrangled_disturbance)
+  mojn_wrangled_pests <- wranglePests(mojn_wrangled_observations)
+  mojn_packaged <- packageMOJNAspen(mojn_wrangled_pests)
 }
 
 # wrangleSites
 test_that("wrangleSites works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSite, MOJN data for testing wrangle functions not available.")
-  mojn_wrangled_sites <- wrangleSites(mojn_data)
 
   # Test if trailing underscores are removed from column names
   expect_false(any(stringr::str_detect(names(mojn_wrangled_sites), "_$")))
@@ -37,7 +44,6 @@ test_that("wrangleSites works", {
 # wrangleSiteVisit
 test_that("wrangleSiteVisit works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSiteVisit, MOJN data for testing wrangle functions not available.")
-  mojn_wrangled_sitevisit <- mojn_data %>% wrangleSites() %>% wrangleSiteVisit()
 
   # Test that park codes and protocol version values are expanded
   expect_all_true(unique(mojn_wrangled_sitevisit$data$SiteVisit$protocolVersion) %in% c("Aspen PIP 1.0", NA_character_)) # only 1 value in lookup tbl
@@ -51,7 +57,6 @@ test_that("wrangleSiteVisit works", {
 # wrangleDisturbance
 test_that("wrangleDisturbances works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleDisturbances, MOJN data for testing wrangle functions not available.")
-  mojn_wrangled_disturbance <- mojn_data %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances()
 
   # Test that disturbance codes are expanded
   expect_all_true(unique(mojn_wrangled_disturbance$data$Disturbance$disturbance) %in% c("Antler rubbing", "Fire", "Livestock grazing", "Wildlife grazing", "Arborglyph", NA_character_))
@@ -60,11 +65,9 @@ test_that("wrangleDisturbances works", {
   expect_contains(names(mojn_wrangled_disturbance$data$Disturbance), c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "disturbance"))
   })
 
-
 # wrangleObservations
 test_that("wrangleObservations works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleObservations, MOJN data for testing wrangle functions not available.")
-  mojn_wrangled_observations <- mojn_data %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances() %>% wrangleObservations()
 
   # Test expanding size classes and sci names
   expect_setequal(unique(mojn_wrangled_observations$data$Observations$sizeClass), c("Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI"))
@@ -82,7 +85,6 @@ test_that("wrangleObservations works", {
 # wranglePests
 test_that("wranglePests works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wranglePests, MOJN data for testing wrangle functions not available.")
-  mojn_wrangled_pests <- mojn_data %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances() %>% wrangleObservations() %>% wranglePests()
 
   # Test column additions/renames are present
   expect_contains(names(mojn_wrangled_pests$data$Pests), c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "SpeciesCode", "verbatimIdentification", "pest"))
@@ -94,7 +96,6 @@ test_that("wranglePests works", {
 # packageMOJNAspen
 test_that("packageMOJNAspen works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for packageMOJNAspen, MOJN data for testing wrangle and package functions not available.")
-  mojn_packaged <- mojn_data %>% wrangleSites() %>% wrangleSiteVisit() %>% wrangleDisturbances() %>% wrangleObservations() %>% wranglePests() %>% packageMOJNAspen()
 
   # Test removal of metadata and sites tbl
   expect_false("metadata" %in% names(mojn_packaged))
@@ -143,12 +144,19 @@ ucbn_wrangle_test_data <- test_path("ucbn_wrangle_test_data.rds")
 
 if (file.exists(ucbn_wrangle_test_data)) {
   ucbn_data <- readRDS(ucbn_wrangle_test_data)
+
+  # Create data for testing each fx
+  ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_data)
+  ucbn_wrangled_sitevisit <- wrangleUCBNSiteVisit(ucbn_wrangled_sites)
+  ucbn_wrangled_disturbance <- wrangleUCBNDisturbances(ucbn_wrangled_sitevisit)
+  ucbn_wrangled_observations <- wrangleUCBNObservations(ucbn_wrangled_disturbance)
+  ucbn_wrangled_pests <- wrangleUCBNPests(ucbn_wrangled_observations)
+  ucbn_packaged <- packageUCBNAspen(ucbn_wrangled_pests)
 }
 
 # wrangleUCBNSites
 test_that("wrangleUCBNSites works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNSites, UCBN data for testing wrangle functions not available.")
-  ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_data)
 
   # Test column additions/renames are present
   expect_equal(names(ucbn_wrangled_sites$data$Locations), c("Loc_Name", "verbatimCoordinateSystem", "verbatimSRS", "verbatimCoordinates", "geodeticDatum", "decimalLatitude", "decimalLongitude", "elevationInMeters", "slopeInPercent", "aspectInDegrees"))
@@ -157,7 +165,6 @@ test_that("wrangleUCBNSites works", {
 # wrangleUCBNSiteVisist
 test_that("wrangleUCBNSiteVisit works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNSiteVisit, UCBN data for testing wrangle functions not available.")
-  ucbn_wrangled_sitevisit <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit()
 
   # Test codes expanded
   expect_true(unique(ucbn_wrangled_sitevisit$data$SiteVisit$unitName) %in% c("City of Rocks National Reserve", "Craters of the Moon National Monument and Preserve"))
@@ -170,7 +177,6 @@ test_that("wrangleUCBNSiteVisit works", {
 # wrangleUCBNDisturbances
 test_that("wrangleUCBNDisturbances works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNDisturbances, UCBN data for testing wrangle functions not available.")
-  ucbn_wrangled_disturbance <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit() %>% wrangleUCBNDisturbances()
 
   # Test column additions/renames are present
   expect_contains(names(ucbn_wrangled_disturbance$data$Disturbance), c("unitCode", "unitName", "Stand", "Transect", "plotNumber", "plotName", "eventDate", "Disturbance"))
@@ -179,7 +185,6 @@ test_that("wrangleUCBNDisturbances works", {
 # wrangleUCBNObservations
 test_that("wrangleUCBNObservations works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNObservations, UCBN data for testing wrangle functions not available.")
-  ucbn_wrangled_observations <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit() %>% wrangleUCBNDisturbances() %>% wrangleUCBNObservations()
 
   # Test expanding size classes and sci names
   expect_setequal(unique(ucbn_wrangled_observations$data$Observations$sizeClass), c("Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI"))
@@ -197,7 +202,6 @@ test_that("wrangleUCBNObservations works", {
 # wrangleUCBNPests
 test_that("wrangleUCBNObservations works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNObservations, UCBN data for testing wrangle functions not available.")
-  ucbn_wrangled_pests <- ucbn_data %>% wrangleUCBNSites() %>% wrangleUCBNSiteVisit() %>% wrangleUCBNDisturbances() %>% wrangleUCBNObservations() %>% wrangleUCBNPests()
 
   # Test pest code expansions
   expect_all_true(unique(ucbn_wrangled_pests$data$Pests$pest) %in% c("Cankers", "Bark/Wood Boring Insect", "Defoliating Insect", "Foliage Disease", "Dwarf Mistletoe", "Mountain Pine Beetle", "Stem Decay", "White Pine Blister Rust"))
