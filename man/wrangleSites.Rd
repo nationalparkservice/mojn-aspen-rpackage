@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{wrangleSites}
 \alias{wrangleSites}
-\title{Wrangle optional sites table}
+\title{Wrangle sites table}
 \usage{
 wrangleSites(raw_data)
 }
@@ -10,8 +10,8 @@ wrangleSites(raw_data)
 \item{raw_data}{Data table returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
 }
 \value{
-raw_site_data with updated sites table and metadata fields
+raw_data with updated sites table
 }
 \description{
-Wrangle optional sites table
+Wrangle sites table
 }
