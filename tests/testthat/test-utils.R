@@ -6,17 +6,17 @@ if (file.exists(mojn_wrangle_test_data)) {
   mojn_data <- readRDS(mojn_wrangle_test_data)
 
   # Create data for testing each fx
-  mojn_wrangled_sites <- wrangleSites(mojn_data)
-  mojn_wrangled_sitevisit <- wrangleSiteVisit(mojn_wrangled_sites)
-  mojn_wrangled_disturbance <- wrangleDisturbances(mojn_wrangled_sitevisit)
-  mojn_wrangled_observations <- wrangleObservations(mojn_wrangled_disturbance)
-  mojn_wrangled_pests <- wranglePests(mojn_wrangled_observations)
+  mojn_wrangled_sites <- wrangleMOJNSites(mojn_data)
+  mojn_wrangled_sitevisit <- wrangleMOJNSiteVisit(mojn_wrangled_sites)
+  mojn_wrangled_disturbance <- wrangleMOJNDisturbances(mojn_wrangled_sitevisit)
+  mojn_wrangled_observations <- wrangleMOJNObservations(mojn_wrangled_disturbance)
+  mojn_wrangled_pests <- wrangleMOJNPests(mojn_wrangled_observations)
   mojn_packaged <- packageMOJNAspen(mojn_wrangled_pests)
 }
 
-# wrangleSites
-test_that("wrangleSites works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSite, MOJN data for testing wrangle functions not available.")
+# wrangleMOJNSites
+test_that("wrangleMOJNSites works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNSite, MOJN data for testing wrangle functions not available.")
 
   # Test if trailing underscores are removed from column names
   expect_false(any(stringr::str_detect(names(mojn_wrangled_sites), "_$")))
@@ -40,9 +40,9 @@ test_that("wrangleSites works", {
   expect_contains(names(mojn_wrangled_sites$data$AllSites), c("shift", "verbatimCoordinates", "verbatimCoordinateSystem", "verbatimSRS", "geodeticDatum", "standHeightInMeters", "decimalLatitude", "decimalLongitude", "elevationInMeters", "slopeInPercent", "aspectInDegrees"))
 })
 
-# wrangleSiteVisit
-test_that("wrangleSiteVisit works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSiteVisit, MOJN data for testing wrangle functions not available.")
+# wrangleMOJNSiteVisit
+test_that("wrangleMOJNSiteVisit works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNSiteVisit, MOJN data for testing wrangle functions not available.")
 
   # Test that park codes and protocol version values are expanded
   expect_all_true(unique(mojn_wrangled_sitevisit$data$SiteVisit$protocolVersion) %in% c("Aspen PIP 1.0", NA_character_)) # only 1 value in lookup tbl
@@ -53,9 +53,9 @@ test_that("wrangleSiteVisit works", {
   expect_contains(names(mojn_wrangled_sitevisit$data$SiteVisit), c(joined_names, "eventDate", "protocolVersion", "unitCode", "unitName", "siteID", "recordedBy"))
   })
 
-# wrangleDisturbance
-test_that("wrangleDisturbances works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleDisturbances, MOJN data for testing wrangle functions not available.")
+# wrangleMOJNDisturbance
+test_that("wrangleMOJNDisturbances works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNDisturbances, MOJN data for testing wrangle functions not available.")
 
   # Test that disturbance codes are expanded
   expect_all_true(unique(mojn_wrangled_disturbance$data$Disturbance$disturbance) %in% c("Antler rubbing", "Fire", "Livestock grazing", "Wildlife grazing", "Arborglyph", NA_character_))
@@ -64,9 +64,9 @@ test_that("wrangleDisturbances works", {
   expect_contains(names(mojn_wrangled_disturbance$data$Disturbance), c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "disturbance"))
   })
 
-# wrangleObservations
-test_that("wrangleObservations works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleObservations, MOJN data for testing wrangle functions not available.")
+# wrangleMOJNObservations
+test_that("wrangleMOJNObservations works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNObservations, MOJN data for testing wrangle functions not available.")
 
   # Test expanding size classes and sci names
   expect_setequal(unique(mojn_wrangled_observations$data$Observations$sizeClass), c("Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI"))
@@ -81,9 +81,9 @@ test_that("wrangleObservations works", {
   expect_false("globalid" %in% names(mojn_wrangled_observations$data$SiteVisit))
   })
 
-# wranglePests
-test_that("wranglePests works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wranglePests, MOJN data for testing wrangle functions not available.")
+# wrangleMOJNPests
+test_that("wrangleMOJNPests works", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNPests, MOJN data for testing wrangle functions not available.")
 
   # Test column additions/renames are present
   expect_contains(names(mojn_wrangled_pests$data$Pests), c("unitCode", "unitName", "siteID", "eventDate", "VisitType", "Community", "SpeciesCode", "verbatimIdentification", "pest"))

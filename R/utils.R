@@ -31,7 +31,7 @@ globalVariables(c(
 #' @param raw_data Data table returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master
 #'
 #' @return raw_data with updated sites table
-wrangleSites <- function(raw_data) {
+wrangleMOJNSites <- function(raw_data) {
   raw_data$data$AllSites <- raw_data$data$AllSites %>%
     # Remove trailing underscores from column names
     dplyr::rename_with(~ sub("_$", "", .x)) %>%
@@ -76,7 +76,7 @@ wrangleSites <- function(raw_data) {
 #' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated site visit table
-wrangleSiteVisit <- function(raw_data) {
+wrangleMOJNSiteVisit <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
     # Expand park code
     dplyr::left_join(raw_data$metadata$SiteVisit$fields$Park$lookup$lookup_df %>%
@@ -111,7 +111,7 @@ wrangleSiteVisit <- function(raw_data) {
 #' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated disturbances table
-wrangleDisturbances <- function(raw_data) {
+wrangleMOJNDisturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
     dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
@@ -132,7 +132,7 @@ wrangleDisturbances <- function(raw_data) {
 #' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated observations table
-wrangleObservations <- function(raw_data) {
+wrangleMOJNObservations <- function(raw_data) {
   # Join site visit info to observations tbl
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
     dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
@@ -179,7 +179,7 @@ wrangleObservations <- function(raw_data) {
 #' @param raw_data Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database
 #'
 #' @return raw_data with updated pests table
-wranglePests <- function(raw_data) {
+wrangleMOJNPests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
     dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community, SpeciesCode, verbatimIdentification) %>%
@@ -275,11 +275,11 @@ loadAndWrangleMOJNAspen <- function(
   aspen_data <- raw_data %>%
     fetchagol::cleanData(cols_to_remove =
                            grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))), value = TRUE)) %>%
-    wrangleSites() %>%
-    wrangleSiteVisit() %>%
-    wrangleDisturbances() %>%
-    wrangleObservations() %>%
-    wranglePests() %>%
+    wrangleMOJNSites() %>%
+    wrangleMOJNSiteVisit() %>%
+    wrangleMOJNDisturbances() %>%
+    wrangleMOJNObservations() %>%
+    wrangleMOJNPests() %>%
     packageMOJNAspen()
 
   # Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
