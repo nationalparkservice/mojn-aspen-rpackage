@@ -334,8 +334,8 @@ wrangleUCBNSiteVisit <- function(raw_data) {
     dplyr::left_join(raw_data$data$Locations,
                      by = join_by(Unique_ID == Loc_Name)) %>%
     # Order cols
-    dplyr::select(globalid, unitCode = Park, unitName, Stand, Transect, plotNumber = PlotNum,
-                  plotName = Unique_ID, eventDate, standHeightInMeters = Site_Height,
+    dplyr::select(globalid, unitCode = Park, unitName, siteID = Unique_ID,  Stand, Transect,
+                  plotNumber = PlotNum, eventDate, standHeightInMeters = Site_Height,
                   verbatimCoordinateSystem:aspectInDegrees, protocolVersion, VisitNotes)
 
   return(raw_data)
