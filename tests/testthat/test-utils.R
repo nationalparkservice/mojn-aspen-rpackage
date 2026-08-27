@@ -241,3 +241,19 @@ test_that("loadAndWrangleUCBNAspen works", {
   # Test that all are dataframes
   lapply(ucbn_output$data, expect_s3_class, "data.frame")
 })
+
+# Helper tests ----
+test_that("get_network works", {
+
+  # Test raw
+  raw_mojn <- get_network(mojn_data, raw = TRUE)
+  expect_equal(raw_mojn, "MOJN")
+  raw_ucbn <- get_network(ucbn_data, raw = TRUE)
+  expect_equal(raw_ucbn, "UCBN")
+
+  # Test packaged
+  mojn <- get_network(mojn_packaged)
+  expect_equal(mojn, "MOJN")
+  ucbn <- get_network(ucbn_packaged)
+  expect_equal(ucbn, "UCBN")
+})

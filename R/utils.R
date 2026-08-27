@@ -530,3 +530,27 @@ loadAndWrangleUCBNAspen <- function(
   invisible(aspen_data)
 
 }
+
+#' Get network based on content of data
+#'
+#' @param data list of aspen dataframes
+#'
+#' @return Network code
+get_network <- function(data, raw = FALSE) {
+  if (raw) {
+    # for use in wrangle and packages functions
+    if ("AllSites" %in% names(data$data)) {
+      network <- "MOJN"
+    } else {
+      network <- "UCBN"
+    }
+  } else {
+    # for use in QC functions
+    if ("GRBA" %in% unique(data$data$SiteVisit$unitCode)) {
+      network <- "MOJN"
+    } else {
+      network <- "UCBN"
+    }
+  }
+  return(network)
+}
