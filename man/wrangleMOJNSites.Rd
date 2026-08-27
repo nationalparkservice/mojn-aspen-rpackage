@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{wrangleMOJNSites}
 \alias{wrangleMOJNSites}
-\title{Wrangle sites table}
+\title{Wrangle MOJN sites table}
 \usage{
 wrangleMOJNSites(raw_data)
 }
 \arguments{
-\item{raw_data}{Data table returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
+\item{raw_data}{List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master}
 }
 \value{
 raw_data with updated sites table
 }
 \description{
-Wrangle sites table
+Wrangle MOJN sites table
 }

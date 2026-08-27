@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{loadAndWrangleMOJNAspen}
 \alias{loadAndWrangleMOJNAspen}
-\title{Fetch, wrangle, and package aspen data from AGOL}
+\title{Fetch, wrangle, and package MOJN aspen data from AGOL}
 \usage{
 loadAndWrangleMOJNAspen(
   aspen_url =
@@ -26,5 +26,5 @@ loadAndWrangleMOJNAspen(
 A list of aspen data frames in data package format
 }
 \description{
-Fetch, wrangle, and package aspen data from AGOL
+Fetch, wrangle, and package MOJN aspen data from AGOL
 }

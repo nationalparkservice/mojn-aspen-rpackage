@@ -7,7 +7,7 @@
 get_network(data, raw = FALSE)
 }
 \arguments{
-\item{data}{list of aspen dataframes}
+\item{data}{List of aspen dataframes}
 }
 \value{
 Network code

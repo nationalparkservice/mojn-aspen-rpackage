@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{packageMOJNAspen}
 \alias{packageMOJNAspen}
-\title{Format aspen data for data package publication}
+\title{Format wrangled MOJN aspen data for data package publication}
 \usage{
 packageMOJNAspen(aspen_data)
 }
 \arguments{
-\item{aspen_data}{The wrangled aspen data}
+\item{aspen_data}{List of tabular wrangled MOJN aspen data}
 }
 \value{
 aspen_data with data package formatting
 }
 \description{
-Format aspen data for data package publication
+Format wrangled MOJN aspen data for data package publication
 }

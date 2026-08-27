@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{wrangleMOJNSiteVisit}
 \alias{wrangleMOJNSiteVisit}
-\title{Wrangle site visit table}
+\title{Wrangle MOJN site visit table}
 \usage{
 wrangleMOJNSiteVisit(raw_data)
 }
 \arguments{
-\item{raw_data}{Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database}
+\item{raw_data}{List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database}
 }
 \value{
 raw_data with updated site visit table
 }
 \description{
-Wrangle site visit table
+Wrangle MOJN site visit table
 }

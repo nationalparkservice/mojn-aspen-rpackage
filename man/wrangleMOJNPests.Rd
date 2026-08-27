@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{wrangleMOJNPests}
 \alias{wrangleMOJNPests}
-\title{Wrangle pests table}
+\title{Wrangle MOJN pests table}
 \usage{
 wrangleMOJNPests(raw_data)
 }
 \arguments{
-\item{raw_data}{Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database}
+\item{raw_data}{List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database}
 }
 \value{
 raw_data with updated pests table
 }
 \description{
-Wrangle pests table
+Wrangle MOJN pests table
 }

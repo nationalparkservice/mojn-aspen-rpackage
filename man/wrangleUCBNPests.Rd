@@ -7,7 +7,7 @@
 wrangleUCBNPests(raw_data)
 }
 \arguments{
-\item{raw_data}{Data table returned by fetchagol::fetchRawData on 'UCBN Aspen Survey v1'}
+\item{raw_data}{List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430 and 'UCBN Aspen Survey v1'}
 }
 \value{
 raw_data with updated sites table

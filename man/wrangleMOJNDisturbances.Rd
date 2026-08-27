@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{wrangleMOJNDisturbances}
 \alias{wrangleMOJNDisturbances}
-\title{Wrangle disturbances table}
+\title{Wrangle MOJN disturbances table}
 \usage{
 wrangleMOJNDisturbances(raw_data)
 }
 \arguments{
-\item{raw_data}{Data returned by fetchagol::fetchRawData on MOJN_Aspen_Database}
+\item{raw_data}{List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database}
 }
 \value{
 raw_data with updated disturbances table
 }
 \description{
-Wrangle disturbances table
+Wrangle MOJN disturbances table
 }
