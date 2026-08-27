@@ -16,7 +16,7 @@ if (file.exists(mojn_wrangle_test_data)) {
 
 # wrangleMOJNSites
 test_that("wrangleMOJNSites works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNSite, MOJN data for testing wrangle functions not available.")
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleMOJNSites, MOJN data for testing wrangle functions not available.")
 
   # Test if trailing underscores are removed from column names
   expect_false(any(stringr::str_detect(names(mojn_wrangled_sites), "_$")))
@@ -256,4 +256,65 @@ test_that("get_network works", {
   expect_equal(mojn, "MOJN")
   ucbn <- get_network(ucbn_packaged)
   expect_equal(ucbn, "UCBN")
+})
+
+# Combined function tests ----
+test_that("wrangleSites works for MOJN data", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSites, MOJN data for testing wrangle functions not available.")
+  expect_equal(wrangleSites(mojn_data), mojn_wrangled_sites)
+})
+
+test_that("wrangleSites works for UCBN data", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleSites, UCBN data for testing wrangle functions not available.")
+  expect_equal(wrangleSites(ucbn_data), ucbn_wrangled_sites)
+})
+
+test_that("wrangleSiteVisit works for MOJN data", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSiteVisit, MOJN data for testing wrangle functions not available.")
+  expect_equal(wrangleSiteVisit(mojn_wrangled_sites), mojn_wrangled_sitevisit)
+})
+
+test_that("wrangleSiteVisit works for UCBN data", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleSiteVisit, UCBN data for testing wrangle functions not available.")
+  expect_equal(wrangleSiteVisit(ucbn_wrangled_sites), ucbn_wrangled_sitevisit)
+})
+
+test_that("wrangleDisturbances works for MOJN data", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleDisturbances, MOJN data for testing wrangle functions not available.")
+  expect_equal(wrangleDisturbances(mojn_wrangled_sitevisit), mojn_wrangled_disturbance)
+})
+
+test_that("wrangleDisturbances works for UCBN data", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleDisturbances, UCBN data for testing wrangle functions not available.")
+  expect_equal(wrangleDisturbances(ucbn_wrangled_sitevisit), ucbn_wrangled_disturbance)
+})
+
+test_that("wrangleObservations works for MOJN data", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleObservations, MOJN data for testing wrangle functions not available.")
+  expect_equal(wrangleObservations(mojn_wrangled_disturbance), mojn_wrangled_observations)
+})
+
+test_that("wrangleObservations works for UCBN data", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleObservations, UCBN data for testing wrangle functions not available.")
+  expect_equal(wrangleObservations(ucbn_wrangled_disturbance), ucbn_wrangled_observations)
+})
+
+test_that("wranglePests works for MOJN data", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wranglePests, MOJN data for testing wrangle functions not available.")
+  expect_equal(wranglePests(mojn_wrangled_observations), mojn_wrangled_pests)
+})
+
+test_that("wranglePests works for UCBN data", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wranglePests, UCBN data for testing wrangle functions not available.")
+  expect_equal(wranglePests(ucbn_wrangled_observations), ucbn_wrangled_pests)
+})
+
+test_that("packageAspen works for MOJN data", {
+  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for packageAspen, MOJN data for testing wrangle functions not available.")
+  expect_equal(packageAspen(mojn_wrangled_pests), mojn_packaged)
+})
+
+test_that("packageAspen works for UCBN data", {
+  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for packageAspen, UCBN data for testing wrangle functions not available.")
+  expect_equal(packageAspen(ucbn_wrangled_pests), ucbn_packaged)
 })
