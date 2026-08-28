@@ -8,6 +8,8 @@ get_network(data, raw = FALSE)
 }
 \arguments{
 \item{data}{List of aspen dataframes}
+
+\item{raw}{Logical value where TRUE indicates the function is being used on raw data and FALSE indicates it is being used on packaged data.}
 }
 \value{
 Network code
