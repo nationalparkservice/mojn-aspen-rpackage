@@ -116,20 +116,6 @@ test_that("packageMOJNAspen works", {
   }
 })
 
-# loadAndWrangleMOJNAspen
-test_that("loadAndWrangleMOJNAspen() works", {
-  mojn_output <- loadAndWrangleMOJNAspen()
-
-  # Test that fx only returns data
-  expect_equal(names(mojn_output), "data")
-
-  # Test that dataframes have expected names
-  expect_named(mojn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
-
-  # Test that all are dataframes
-  lapply(mojn_output$data, expect_s3_class, "data.frame")
-})
-
 # UCBN tests ----
 # Read in saved UCBN data for testing - object has both db and sites tbls and went through fetchagol::cleanData()
 ucbn_wrangle_test_data <- test_path("ucbn_wrangle_test_data.rds")
@@ -228,20 +214,6 @@ test_that("packageUCBNAspen works", {
   }
 })
 
-# loadAndWrangleUCBNAspen
-test_that("loadAndWrangleUCBNAspen works", {
-  ucbn_output <- loadAndWrangleUCBNAspen()
-
-  # Test that fx only returns data
-  expect_equal(names(ucbn_output), "data")
-
-  # Test that dataframes have expected names
-  expect_named(ucbn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
-
-  # Test that all are dataframes
-  lapply(ucbn_output$data, expect_s3_class, "data.frame")
-})
-
 # Helper tests ----
 test_that("get_network works", {
 
@@ -259,6 +231,7 @@ test_that("get_network works", {
 })
 
 # Combined function tests ----
+# wrangleSites
 test_that("wrangleSites works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSites, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangleSites(mojn_data), mojn_wrangled_sites)
@@ -269,6 +242,7 @@ test_that("wrangleSites works for UCBN data", {
   expect_equal(wrangleSites(ucbn_data), ucbn_wrangled_sites)
 })
 
+# wrangleSiteVisit
 test_that("wrangleSiteVisit works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSiteVisit, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangleSiteVisit(mojn_wrangled_sites), mojn_wrangled_sitevisit)
@@ -279,6 +253,7 @@ test_that("wrangleSiteVisit works for UCBN data", {
   expect_equal(wrangleSiteVisit(ucbn_wrangled_sites), ucbn_wrangled_sitevisit)
 })
 
+# wrangleDisturbances
 test_that("wrangleDisturbances works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleDisturbances, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangleDisturbances(mojn_wrangled_sitevisit), mojn_wrangled_disturbance)
@@ -289,6 +264,7 @@ test_that("wrangleDisturbances works for UCBN data", {
   expect_equal(wrangleDisturbances(ucbn_wrangled_sitevisit), ucbn_wrangled_disturbance)
 })
 
+# wrangleObservations
 test_that("wrangleObservations works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleObservations, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangleObservations(mojn_wrangled_disturbance), mojn_wrangled_observations)
@@ -299,6 +275,7 @@ test_that("wrangleObservations works for UCBN data", {
   expect_equal(wrangleObservations(ucbn_wrangled_disturbance), ucbn_wrangled_observations)
 })
 
+# wranglePests
 test_that("wranglePests works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wranglePests, MOJN data for testing wrangle functions not available.")
   expect_equal(wranglePests(mojn_wrangled_observations), mojn_wrangled_pests)
@@ -309,6 +286,7 @@ test_that("wranglePests works for UCBN data", {
   expect_equal(wranglePests(ucbn_wrangled_observations), ucbn_wrangled_pests)
 })
 
+# packageAspen
 test_that("packageAspen works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for packageAspen, MOJN data for testing wrangle functions not available.")
   expect_equal(packageAspen(mojn_wrangled_pests), mojn_packaged)
@@ -317,4 +295,31 @@ test_that("packageAspen works for MOJN data", {
 test_that("packageAspen works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for packageAspen, UCBN data for testing wrangle functions not available.")
   expect_equal(packageAspen(ucbn_wrangled_pests), ucbn_packaged)
+})
+
+# loadAndPackageAspen
+test_that("loadAndPackageAspen() works", {
+  expect_error(loadAndPackageAspen(network = "mojave desert network", agol_username = "placeholder", agol_password = "placeholder"))
+
+  mojn_output <- loadAndPackageAspen(network = "MOJN")
+
+  # Test that fx only returns data
+  expect_equal(names(mojn_output), "data")
+
+  # Test that dataframes have expected names
+  expect_named(mojn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+
+  # Test that all are dataframes
+  lapply(mojn_output$data, expect_s3_class, "data.frame")
+
+  ucbn_output <- loadAndPackageAspen(network = "UCBN")
+
+  # Test that fx only returns data
+  expect_equal(names(ucbn_output), "data")
+
+  # Test that dataframes have expected names
+  expect_named(ucbn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+
+  # Test that all are dataframes
+  lapply(ucbn_output$data, expect_s3_class, "data.frame")
 })
