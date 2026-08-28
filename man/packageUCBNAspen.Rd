@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{packageUCBNAspen}
 \alias{packageUCBNAspen}
-\title{Format aspen data for data package publication}
+\title{Format wrangled UCBN aspen data for data package publication}
 \usage{
 packageUCBNAspen(aspen_data)
 }
 \arguments{
-\item{aspen_data}{The wrangled UCBN aspen data}
+\item{aspen_data}{List of tabular wrangled UCBN aspen data}
 }
 \value{
 aspen_data with data package formatting
 }
 \description{
-Format aspen data for data package publication
+Format wrangled UCBN aspen data for data package publication
 }

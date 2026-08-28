@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{wrangleSites}
 \alias{wrangleSites}
-\title{Wrangle sites table}
+\title{Wrangle aspen sites table}
 \usage{
 wrangleSites(raw_data)
 }
 \arguments{
-\item{raw_data}{Data table returned by fetchagol::fetchRawData on MOJN_Aspen_Sites_Master}
+\item{raw_data}{List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master or UCBN_Aspen_Locations_pt_20210430}
 }
 \value{
 raw_data with updated sites table
 }
 \description{
-Wrangle sites table
+Wrangle aspen sites table
 }
