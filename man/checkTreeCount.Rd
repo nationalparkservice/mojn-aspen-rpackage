@@ -2,16 +2,16 @@
 % Please edit documentation in R/QC.R
 \name{checkTreeCount}
 \alias{checkTreeCount}
-\title{Check for tree records in the Observations table that have a count of zero or a count greater than 250}
+\title{Check for tree records in the Observations table that have a total count of zero or a total count greater than 250}
 \usage{
 checkTreeCount(aspen_data)
 }
 \arguments{
-\item{aspen_data}{List of aspen dataframes in data package format, as returned by loadAndPackageAspen}
+\item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by loadAndPackageAspen}
 }
 \value{
-Table containing tree records that have a count of zero or a count greater than 250
+Table containing tree records that have a total count of zero or a total count greater than 250
 }
 \description{
-Check for tree records in the Observations table that have a count of zero or a count greater than 250
+Check for tree records in the Observations table that have a total count of zero or a total count greater than 250
 }

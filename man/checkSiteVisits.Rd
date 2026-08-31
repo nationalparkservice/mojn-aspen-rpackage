@@ -7,10 +7,10 @@
 checkSiteVisits(aspen_data)
 }
 \arguments{
-\item{aspen_data}{List of aspen dataframes in data package format, as returned by loadAndPackageAspen}
+\item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by loadAndPackageAspen}
 }
 \value{
-Table containing the site visits that do not have at least one observation
+Table containing site visits that do not have at least one observation
 }
 \description{
 Check that all site visits have at least one observation

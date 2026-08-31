@@ -2,16 +2,19 @@
 % Please edit documentation in R/QC.R
 \name{checkTreeID}
 \alias{checkTreeID}
-\title{Check that all tree species have been identified}
+\title{Check for trees have not been identified}
 \usage{
 checkTreeID(aspen_data)
 }
 \arguments{
-\item{aspen_data}{List of aspen dataframes in data package format, as returned by loadAndPackageAspen}
+\item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by loadAndPackageAspen}
 }
 \value{
-Table containing rows that are missing either a species code, verbatim identification, or scientific name
+Table containing rows that are missing tree identification and an indication of whether the record has live trees
 }
 \description{
-Check that all tree species have been identified
+The column hasLiveTree in the results table is TRUE when an unidentified tree
+has live trees recorded and is FALSE otherwise. When a dead tree is encountered
+in the field, it may not be possible to identify it, but all live trees should
+be identified.
 }

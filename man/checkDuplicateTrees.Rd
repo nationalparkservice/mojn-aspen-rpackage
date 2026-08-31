@@ -7,7 +7,7 @@
 checkDuplicateTrees(aspen_data)
 }
 \arguments{
-\item{aspen_data}{List of aspen dataframes in data package format, as returned by loadAndPackageAspen}
+\item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by loadAndPackageAspen}
 }
 \value{
 Table containing duplicate tree records in the Observations table
