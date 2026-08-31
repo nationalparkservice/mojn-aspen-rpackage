@@ -57,10 +57,24 @@ test_that("checkSiteVisits works for pass and fail", {
   expect_equal(nrow(fail), 1)
   expect_equal(ncol(fail), 7) # MOJN col names (not pass/fail specific)
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
-  expect_true("GRBA_A_063" %in% fail$siteID)
+  expect_equal(fail$siteID, "GRBA_A_063")
 
   # test pass (0x4 tbl)
   pass <- checkSiteVisits(test_data_pass)
+
+  expect_equal(nrow(pass), 0)
+  expect_equal(ncol(pass), 4) # UCBN col names (not pass/fail specific)
+  expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitNotes"))
+})
+
+test_that("checkSiteAspen works for pass and fail", {
+  # test fail behavior
+  fail <- checkSiteAspen(test_data_fail)
+  expect_equal(nrow(fail), 4)
+  expect_equal(fail$siteID, c("GRBA_A_063", "GRBA_A_390", "GRBA_A_460", "GRBA_A_143"))
+
+  # test pass behavior
+  pass <- checkSiteAspen(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 4) # UCBN col names (not pass/fail specific)
@@ -78,6 +92,7 @@ test_that("checkTreeCount works for pass and fail", {
 
   # test pass behavior
   pass <- checkTreeCount(test_data_pass)
+
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
@@ -86,6 +101,7 @@ test_that("checkTreeCount works for pass and fail", {
 test_that("checkDuplicateTrees works for pass and fail", {
   # test fail behavior
   fail <- checkDuplicateTrees(test_data_fail)
+
   expect_equal(nrow(fail), 12)
   expect_all_true(fail$siteID == "GRBA_A_061")
   expect_all_true(fail$scientificName == "Populus tremuloides")
@@ -93,6 +109,7 @@ test_that("checkDuplicateTrees works for pass and fail", {
 
   # test pass behavior
   pass <- checkDuplicateTrees(test_data_pass)
+
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
@@ -101,6 +118,7 @@ test_that("checkDuplicateTrees works for pass and fail", {
 test_that("checkTreeID works for pass and fail", {
   # test fail behavior
   fail <- checkTreeID(test_data_fail)
+
   expect_equal(nrow(fail), 2)
   expect_true(fail$hasLiveTree[fail$siteID == "GRBA_A_390"])
   expect_false(fail$hasLiveTree[fail$siteID == "GRBA_A_460"])
@@ -108,6 +126,7 @@ test_that("checkTreeID works for pass and fail", {
 
   # test pass behavior
   pass <- checkTreeID(test_data_pass)
+
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
