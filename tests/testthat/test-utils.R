@@ -3,10 +3,10 @@
 mojn_wrangle_test_data <- test_path("mojn_wrangle_test_data.rds")
 
 if (file.exists(mojn_wrangle_test_data)) {
-  mojn_data <- readRDS(mojn_wrangle_test_data)
+  mojn_raw <- readRDS(mojn_wrangle_test_data)
 
   # Create data for testing each fx
-  mojn_wrangled_sites <- wrangleMOJNSites(mojn_data)
+  mojn_wrangled_sites <- wrangleMOJNSites(mojn_raw)
   mojn_wrangled_sitevisit <- wrangleMOJNSiteVisit(mojn_wrangled_sites)
   mojn_wrangled_disturbance <- wrangleMOJNDisturbances(mojn_wrangled_sitevisit)
   mojn_wrangled_observations <- wrangleMOJNObservations(mojn_wrangled_disturbance)
@@ -121,10 +121,10 @@ test_that("packageMOJNAspen works", {
 ucbn_wrangle_test_data <- test_path("ucbn_wrangle_test_data.rds")
 
 if (file.exists(ucbn_wrangle_test_data)) {
-  ucbn_data <- readRDS(ucbn_wrangle_test_data)
+  ucbn_raw <- readRDS(ucbn_wrangle_test_data)
 
   # Create data for testing each fx
-  ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_data)
+  ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_raw)
   ucbn_wrangled_sitevisit <- wrangleUCBNSiteVisit(ucbn_wrangled_sites)
   ucbn_wrangled_disturbance <- wrangleUCBNDisturbances(ucbn_wrangled_sitevisit)
   ucbn_wrangled_observations <- wrangleUCBNObservations(ucbn_wrangled_disturbance)
@@ -218,9 +218,9 @@ test_that("packageUCBNAspen works", {
 test_that("get_network works", {
 
   # Test raw
-  raw_mojn <- get_network(mojn_data, raw = TRUE)
+  raw_mojn <- get_network(mojn_raw, raw = TRUE)
   expect_equal(raw_mojn, "MOJN")
-  raw_ucbn <- get_network(ucbn_data, raw = TRUE)
+  raw_ucbn <- get_network(ucbn_raw, raw = TRUE)
   expect_equal(raw_ucbn, "UCBN")
 
   # Test packaged
@@ -234,12 +234,12 @@ test_that("get_network works", {
 # wrangleSites
 test_that("wrangleSites works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSites, MOJN data for testing wrangle functions not available.")
-  expect_equal(wrangleSites(mojn_data), mojn_wrangled_sites)
+  expect_equal(wrangleSites(mojn_raw), mojn_wrangled_sites)
 })
 
 test_that("wrangleSites works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleSites, UCBN data for testing wrangle functions not available.")
-  expect_equal(wrangleSites(ucbn_data), ucbn_wrangled_sites)
+  expect_equal(wrangleSites(ucbn_raw), ucbn_wrangled_sites)
 })
 
 # wrangleSiteVisit
@@ -301,25 +301,21 @@ test_that("packageAspen works for UCBN data", {
 test_that("loadAndPackageAspen() works", {
   expect_error(loadAndPackageAspen(network = "mojave desert network", agol_username = "placeholder", agol_password = "placeholder"))
 
-  mojn_output <- loadAndPackageAspen(network = "MOJN")
-
   # Test that fx only returns data
-  expect_equal(names(mojn_output), "data")
+  expect_equal(names(mojn_data), "data")
 
   # Test that dataframes have expected names
-  expect_named(mojn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+  expect_named(mojn_data$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
 
   # Test that all are dataframes
-  lapply(mojn_output$data, expect_s3_class, "data.frame")
-
-  ucbn_output <- loadAndPackageAspen(network = "UCBN")
+  lapply(mojn_data$data, expect_s3_class, "data.frame")
 
   # Test that fx only returns data
-  expect_equal(names(ucbn_output), "data")
+  expect_equal(names(ucbn_data), "data")
 
   # Test that dataframes have expected names
-  expect_named(ucbn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+  expect_named(ucbn_data$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
 
   # Test that all are dataframes
-  lapply(ucbn_output$data, expect_s3_class, "data.frame")
+  lapply(ucbn_data$data, expect_s3_class, "data.frame")
 })
