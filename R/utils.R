@@ -66,7 +66,7 @@ wrangleMOJNSites <- function(raw_data) {
       slopeInPercent = Slope,
       aspectInDegrees = Aspect) %>%
     # Remove unnecessary columns
-    dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID, -Shift)
+    dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID, -Shift, -Evaluation, -Status, -GRTSAssessment)
 
   return(raw_data)
 }
@@ -92,8 +92,8 @@ wrangleMOJNSiteVisit <- function(raw_data) {
     # Join site info from all sites tbl
     dplyr::left_join(raw_data$data$AllSites,
                      by = dplyr::join_by(Park, Site)) %>%
-    dplyr::relocate(Stratum, Zone, eventDate, VisitType, FieldSeason, .before = Observer) %>%
-    dplyr::relocate(Evaluation:GRTSAssessment, protocolVersion, Community, VisitNotes, .after = dplyr::last_col()) %>%
+    dplyr::relocate(Stratum, Zone, Community, eventDate, VisitType, FieldSeason, .before = Observer) %>%
+    dplyr::relocate(protocolVersion, VisitNotes, .after = dplyr::last_col()) %>%
     dplyr::rename(
       # CSO standard column names
       unitCode = Park,
