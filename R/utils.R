@@ -200,55 +200,6 @@ wrangleMOJNPests <- function(raw_data) {
   return(raw_data)
 }
 
-#' Format wrangled MOJN aspen data for data package publication
-#'
-#' @param aspen_data List of tabular wrangled MOJN aspen data
-#'
-#' @return aspen_data with data package formatting
-packageMOJNAspen <- function(aspen_data) {
-  # Remove metadata and AllSites tbl from final data package tbls
-  aspen_data$metadata <- NULL
-  aspen_data$data <- aspen_data$data[names(aspen_data$data) != "AllSites"]
-
-  tbl_names <- names(aspen_data$data)
-
-  # Resolve taxonomy to ITIS, GBIF
-  scinames <- taxize::gna_verifier(names = unique(aspen_data$data$Observations$verbatimIdentification), data_sources = c(3, 11)) %>%
-    dplyr::select(verbatimIdentification = submittedName, scientificName = matchedCanonicalSimple) %>%
-    # Correct name not caught by gna_verifier
-    dplyr::mutate(scientificName = ifelse(verbatimIdentification == "Pinus longeava", "Pinus longaeva", scientificName))
-
-  aspen_data$data <- lapply(tbl_names, function(nm) {
-    tbl <- aspen_data$data[[nm]]
-    # Wrangling for all tbls
-    tbl <- tbl %>%
-      janitor::clean_names(case = "lower_camel") %>%
-      # Fix acronym capitalization
-      dplyr::rename(dplyr::any_of(c(siteID = "siteId",
-                                    verbatimSRS = "verbatimSrs",
-                                    GRTSAssessment = "grtsAssessment",
-                                    GRTSOrder = "grtsOrder"))) %>%
-      dplyr::mutate(
-        # DWC columns
-        type = "Event",
-        basisOfRecord = ifelse(nm == "SiteVisit", "Event", "HumanObservation")
-        )
-
-    # Update taxonomy
-    if("verbatimIdentification" %in% names(tbl)) {
-      tbl <- tbl %>%
-        # Join resolved taxonomy
-        dplyr::left_join(scinames,
-                         by = "verbatimIdentification") %>%
-        QCkit::get_taxon_rank("scientificName") %>%
-        dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
-      }
-    return(tbl)
-    })
-  names(aspen_data$data) <- tbl_names
-  return(aspen_data)
-}
-
 #' Wrangle UCBN sites table
 #'
 #' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430
@@ -411,51 +362,6 @@ wrangleUCBNPests <- function(raw_data) {
   return(raw_data)
 }
 
-#' Format wrangled UCBN aspen data for data package publication
-#'
-#' @param aspen_data List of tabular wrangled UCBN aspen data
-#'
-#' @return aspen_data with data package formatting
-packageUCBNAspen <- function(aspen_data) {
-  # Remove metadata and unnecessary tbls from final data package
-  aspen_data$metadata <- NULL
-  aspen_data$data[c("begin_image_repeat", "Locations")] <- NULL
-
-  tbl_names <- names(aspen_data$data)
-
-  # Resolve taxonomy to ITIS, GBIF
-  scinames <- taxize::gna_verifier(names = unique(aspen_data$data$Observations$verbatimIdentification), data_sources = c(3, 11)) %>%
-    dplyr::select(verbatimIdentification = submittedName, scientificName = matchedCanonicalSimple)
-
-  aspen_data$data <- lapply(tbl_names, function(nm) {
-    tbl <- aspen_data$data[[nm]]
-    # Wrangling for all tbls
-    tbl <- tbl %>%
-      janitor::clean_names(case = "lower_camel") %>%
-      # Fix acronym capitalization
-      dplyr::rename(dplyr::any_of(c(siteID = "siteId",
-                                    verbatimSRS = "verbatimSrs"))) %>%
-      dplyr::mutate(
-        # DWC columns
-        type = "Event",
-        basisOfRecord = ifelse(nm == "SiteVisit", "Event", "HumanObservation")
-      )
-
-    # Update taxonomy
-    if("verbatimIdentification" %in% names(tbl)) {
-      tbl <- tbl %>%
-        # Join resolved taxonomy
-        dplyr::left_join(scinames,
-                         by = "verbatimIdentification") %>%
-        QCkit::get_taxon_rank("scientificName") %>%
-        dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
-    }
-    return(tbl)
-  })
-  names(aspen_data$data) <- tbl_names
-  return(aspen_data)
-}
-
 #' Get network based on content of data
 #'
 #' @param data List of aspen dataframes
@@ -571,18 +477,52 @@ wranglePests <- function(raw_data) {
 
 #' Format wrangled aspen data for data package publication
 #'
-#' @param aspen_data List of tabular wrangled aspen data
+#' @param aspen_data List of tabular wrangled aspen data tables
 #'
 #' @return aspen_data with data package formatting
 packageAspen <- function(aspen_data) {
-  network <- get_network(aspen_data, raw = TRUE)
+  # Remove metadata and tbls that will not be published from final data package tbls
+  aspen_data$metadata <- NULL
+  aspen_data$data <- aspen_data$data[!names(aspen_data$data) %in% c("AllSites", "begin_image_repeat", "Locations")]
 
-  if (network == "MOJN") {
-    aspen_data <- packageMOJNAspen(aspen_data)
-  } else {
-    # network == "UCBN" packaging
-    aspen_data <- packageUCBNAspen(aspen_data)
-  }
+  tbl_names <- names(aspen_data$data)
+
+  # Resolve taxonomy to ITIS, GBIF
+  scinames <- taxize::gna_verifier(names = unique(aspen_data$data$Observations$verbatimIdentification), data_sources = c(3, 11)) %>%
+    dplyr::select(verbatimIdentification = submittedName, scientificName = matchedCanonicalSimple) %>%
+    # Correct MOJN name not caught by gna_verifier
+    dplyr::mutate(scientificName = ifelse(verbatimIdentification == "Pinus longeava" | verbatimIdentification == "Pinus longaeva", "Pinus longaeva", scientificName))
+
+  aspen_data$data <- lapply(tbl_names, function(nm) {
+    tbl <- aspen_data$data[[nm]]
+    # Wrangling for all tbls
+    tbl <- tbl %>%
+      janitor::clean_names(case = "lower_camel") %>%
+      # Fix acronym capitalization
+      dplyr::rename(dplyr::any_of(c(siteID = "siteId",
+                                    verbatimSRS = "verbatimSrs",
+                                    GRTSAssessment = "grtsAssessment",
+                                    GRTSOrder = "grtsOrder"))) %>%
+      dplyr::mutate(
+        # DWC columns
+        type = "Event",
+        basisOfRecord = ifelse(nm == "SiteVisit", "Event", "HumanObservation"),
+        # Replace white spaces with a single space
+        dplyr::across(dplyr::where(is.character), ~ stringr::str_replace_all(., "\\s+", " "))
+      )
+
+    # Update taxonomy
+    if("verbatimIdentification" %in% names(tbl)) {
+      tbl <- tbl %>%
+        # Join resolved taxonomy
+        dplyr::left_join(scinames,
+                         by = "verbatimIdentification") %>%
+        QCkit::get_taxon_rank("scientificName") %>%
+        dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
+    }
+    return(tbl)
+  })
+  names(aspen_data$data) <- tbl_names
   return(aspen_data)
 }
 
