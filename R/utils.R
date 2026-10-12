@@ -23,8 +23,9 @@ globalVariables(c(
   "protocolVersion", "shift", "Aspect", "aspectInDegrees", "Coord_Syst",
   "Elevation", "Loc_Name", "PlotNum", "Site_Height", "Slope", "Stand",
   "Transect", "UTM_Zone", "Unique_ID", "decimalLatitude", "decimalLongitude",
-  "UnitCode", "cntClass6List", "sppSummaryCode", "matchedCanonicalSimple"
-                ))
+  "UnitCode", "cntClass6List", "sppSummaryCode", "matchedCanonicalSimple",
+  "visitType"
+  ))
 
 #' Wrangle MOJN sites table
 #'
@@ -266,11 +267,13 @@ wrangleUCBNSites <- function(raw_data) {
       # Add wkid column for lat long coordinates for use in generating elevation, aspect, slope
       # From ESRI Developer: 4326 is generally assumed to be the spatial reference when talking about "latitude" or "longitude"
       # (https://developers.arcgis.com/documentation/spatial-references/)
-      latlong_wkid = "4326"
+      latlong_wkid = "4326",
+      # Add visit type column for consistency with legacy access data and MOJN data
+      visitType = NA_character_
     ) %>%
     # Get elevation, aspect, slope from AGOL
     ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = "mojn_data") %>%
-    dplyr::select(Loc_Name, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
+    dplyr::select(Loc_Name, visitType, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
 
   return(raw_data)
 }
@@ -296,7 +299,7 @@ wrangleUCBNSiteVisit <- function(raw_data) {
                      by = join_by(Unique_ID == Loc_Name)) %>%
     # Order cols
     dplyr::select(globalid, unitCode = Park, unitName, siteID = Unique_ID,  Stand, Transect,
-                  plotNumber = PlotNum, eventDate, standHeightInMeters = Site_Height,
+                  plotNumber = PlotNum, eventDate, visitType, standHeightInMeters = Site_Height,
                   verbatimCoordinateSystem:aspectInDegrees, protocolVersion, VisitNotes)
 
   return(raw_data)
@@ -325,7 +328,7 @@ wrangleUCBNDisturbances <- function(raw_data) {
 #' @return raw_data with updated sites table
 wrangleUCBNObservations <- function(raw_data) {
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
-    dplyr::select(parentglobalid = globalid, unitCode:eventDate) %>%
+    dplyr::select(parentglobalid = globalid, unitCode:visitType) %>%
     dplyr::right_join(raw_data$data$Observations,
                       by = "parentglobalid") %>%
     # Isolate species name
@@ -400,7 +403,7 @@ wrangleUCBNPests <- function(raw_data) {
         pest == "White Pine Blister Rust" ~ "Cankers, swelling, broken bark, aecia, pitching, and chewing, on white pine species.",
       )
     ) %>%
-    dplyr::select(-parentglobalid, -globalid, -Pest)
+    dplyr::select(-parentglobalid, -globalid, -Pest, -visitType)
 
   # Remove ID col from Observations tbl, not needed after join
   raw_data$data$Observations["globalid"] <- NULL
