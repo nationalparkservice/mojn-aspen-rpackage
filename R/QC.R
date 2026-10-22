@@ -143,3 +143,21 @@ checkDuplicatePests <- function(aspen_data) {
 
   return(tbl)
 }
+
+#' Check for duplicate disturbance records for a site visit
+#'
+#' @inheritParams checkSiteVisits
+#'
+#'@returns Table containing duplicate disturbance records
+checkDuplicateDisturbance <- function(aspen_data) {
+  select_cols <- c("unitCode", "siteID", "eventDate", "stand", "transect",
+                   "plotNumber", "disturbance")
+
+  tbl <- aspen_data$data$Disturbances %>%
+    dplyr::add_count(siteID, eventDate, disturbance) %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::select(dplyr::any_of(select_cols)) %>%
+    dplyr::arrange(siteID, eventDate, disturbance)
+
+  return(tbl)
+}

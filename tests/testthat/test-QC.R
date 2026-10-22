@@ -46,10 +46,19 @@ test_data_fail <- list(
     ),
 
     Pests = dplyr::tribble(
-      ~unitCode, ~siteID,  ~eventDate,   ~speciesCode, ~scientificName, ~pest,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5", "Populus tremuloides", "Canker",
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5", "Populus tremuloides", "Canker",
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",   "Unknown", "Mountain Pine Beetle"
+      ~unitCode, ~siteID,    ~eventDate, ~visitType,  ~speciesCode, ~scientificName, ~pest,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary", "POTR5", "Populus tremuloides", "Canker",
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary", "POTR5", "Populus tremuloides", "Canker",
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary", "UNK",   "Unknown", "Mountain Pine Beetle"
+    ),
+
+    Disturbances = dplyr::tribble(
+      ~unitCode, ~siteID,    ~eventDate, ~visitType,  ~disturbance,
+      "GRBA",  "GRBA_A_063", "2021-09-04", "Duplicate", "Antler rubbing",
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary", "Fire",
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary", "Fire",
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary", "Wildlife grazing",
+
     )
   )
 )
@@ -177,4 +186,21 @@ test_that("checkDuplicatePests works for pass and fail", {
   expect_equal(ncol(pass), 9) # UCBN col names
   expect_equal(names(pass), c("unitCode", "siteID", "eventDate", "stand", "transect",
                               "plotNumber", "speciesCode", "scientificName", "pest"))
+})
+
+test_that("checkDuplicateDisturbance works for pass and fail", {
+  # test fail behavior
+  fail <- checkDuplicateDisturbance(test_data_fail)
+
+  expect_equal(nrow(fail), 2)
+  expect_equal(ncol(fail), 4) # MOJN col names
+  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "disturbance"))
+
+  # test pass behavior
+  pass <- checkDuplicateDisturbance(test_data_pass)
+
+  expect_equal(nrow(pass), 0)
+  expect_equal(ncol(pass), 7) # UCBN col names
+  expect_equal(names(pass), c("unitCode", "siteID", "eventDate", "stand", "transect",
+                              "plotNumber", "disturbance"))
 })
