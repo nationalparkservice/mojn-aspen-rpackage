@@ -125,3 +125,21 @@ checkTreeID <- function(aspen_data) {
 
   return(tbl)
 }
+
+#' Check for duplicate pest records for a tree
+#'
+#' @inheritParams checkSiteVisits
+#'
+#'@returns Table containing duplicate pest records
+checkDuplicatePests <- function(aspen_data) {
+  select_cols <- c("unitCode", "siteID", "eventDate", "stand", "transect",
+                   "plotNumber", "speciesCode", "scientificName", "pest")
+
+  tbl <- aspen_data$data$Pests %>%
+    dplyr::add_count(siteID, eventDate, speciesCode, scientificName, pest) %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::select(dplyr::any_of(select_cols)) %>%
+    dplyr::arrange(siteID, eventDate, speciesCode, pest)
+
+  return(tbl)
+}

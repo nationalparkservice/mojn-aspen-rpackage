@@ -43,11 +43,18 @@ test_data_fail <- list(
       "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  22,
       "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   6,
       "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  3
+    ),
+
+    Pests = dplyr::tribble(
+      ~unitCode, ~siteID,  ~eventDate,   ~speciesCode, ~scientificName, ~pest,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5", "Populus tremuloides", "Canker",
+      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5", "Populus tremuloides", "Canker",
+      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",   "Unknown", "Mountain Pine Beetle"
     )
   )
 )
 
-test_data_pass <- list(data = lapply(ucbn_data$data[c("SiteVisit", "Observations")],
+test_data_pass <- list(data = lapply(ucbn_data$data,
                                      dplyr::filter, siteID %in% c("CIRO_11_2_1", "CIRO_24_1_1", "CIRO_54_1_2")))
 
 # Test QC functions ----
@@ -93,12 +100,14 @@ test_that("checkSiteAspen works for pass and fail", {
 
   expect_equal(nrow(fail), 5)
   expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_460", "GRBA_A_143"))
+  expect_equal(ncol(fail), 7) # MOJN col names
+  expect_equal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
 
   # test pass behavior
   pass <- checkSiteAspen(test_data_pass)
 
   expect_equal(nrow(pass), 0)
-  expect_equal(ncol(pass), 5) # UCBN col names (not pass/fail specific)
+  expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
 })
 
@@ -151,4 +160,21 @@ test_that("checkTreeID works for pass and fail", {
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
+})
+
+test_that("checkDuplicatePests works for pass and fail", {
+  # test fail behavior
+  fail <- checkDuplicatePests(test_data_fail)
+
+  expect_equal(nrow(fail), 2)
+  expect_equal(ncol(fail), 6) # MOJN col names
+  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "scientificName", "pest"))
+
+  # test pass behavior
+  pass <- checkDuplicatePests(test_data_pass)
+
+  expect_equal(nrow(pass), 0)
+  expect_equal(ncol(pass), 9) # UCBN col names
+  expect_equal(names(pass), c("unitCode", "siteID", "eventDate", "stand", "transect",
+                              "plotNumber", "speciesCode", "scientificName", "pest"))
 })
