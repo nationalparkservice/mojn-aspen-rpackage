@@ -2,7 +2,7 @@
 % Please edit documentation in R/QC.R
 \name{checkTreeID}
 \alias{checkTreeID}
-\title{Check for trees have not been identified}
+\title{Check for trees that have not been identified}
 \usage{
 checkTreeID(aspen_data)
 }
@@ -14,7 +14,7 @@ Table containing rows that are missing tree identification and an indication of 
 }
 \description{
 The column hasLiveTree in the results table is TRUE when an unidentified tree
-has live trees recorded and is FALSE otherwise. When a dead tree is encountered
-in the field, it may not be possible to identify it, but all live trees should
-be identified.
+has at least one live tree recorded and is FALSE otherwise. When a dead tree
+is encountered in the field, it may not be possible to identify it, but live
+trees should be identified.
 }

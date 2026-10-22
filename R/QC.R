@@ -1,3 +1,9 @@
+# Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
+globalVariables(c(
+  "rows", "speciesCode", "sizeClass", "individualCount", "totalTreeCount", "Status",
+  "year"
+))
+
 #' Check that all site visits have at least one observation
 #'
 #' @param aspen_data Nested list of aspen dataframes in data package format, as returned by loadAndPackageAspen
@@ -16,6 +22,25 @@ checkSiteVisits <- function(aspen_data) {
                           visits_without_obs,
                           by = c("siteID", "eventDate")) %>%
     dplyr::select(dplyr::any_of(select_cols))
+
+  return(tbl)
+}
+
+#' Check for sites that were visited more than once in a year
+#'
+#' @inheritParams checkSiteVisits
+#'
+#' @returns Table containing site visits for sites that were visited more than once in a year
+checkDuplicateSiteVisits <- function(aspen_data) {
+  select_cols <- c("unitCode", "siteID", "year", "eventDate", "visitType",
+                   "fieldSeason", "stand", "transect", "plotNumber", "visitNotes")
+
+  tbl <- aspen_data$data$SiteVisit %>%
+    dplyr::mutate(year = lubridate::year(eventDate)) %>%
+    dplyr::add_count(siteID, year) %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::select(dplyr::any_of(select_cols)) %>%
+    dplyr::arrange(siteID, year)
 
   return(tbl)
 }
@@ -80,12 +105,12 @@ checkDuplicateTrees <- function(aspen_data) {
   return(tbl)
 }
 
-#' Check for trees have not been identified
+#' Check for trees that have not been identified
 #'
 #' The column hasLiveTree in the results table is TRUE when an unidentified tree
-#' has live trees recorded and is FALSE otherwise. When a dead tree is encountered
-#' in the field, it may not be possible to identify it, but all live trees should
-#' be identified.
+#' has at least one live tree recorded and is FALSE otherwise. When a dead tree
+#' is encountered in the field, it may not be possible to identify it, but live
+#' trees should be identified.
 #'
 #' @inheritParams checkSiteVisits
 #'
