@@ -27,7 +27,7 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Remotes: 
-    nationalparkservice/fetchagol,
+    nationalparkservice/imd-fetchagol-package,
     doi-nps/QCkit,
-    aserrantes/ucbn (>= 0.1.0)
+    aserrantes/ucbn-rpackage
 Config/roxygen2/version: 8.1.0

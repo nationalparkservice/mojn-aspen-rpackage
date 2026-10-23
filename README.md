@@ -1,15 +1,15 @@
 Aspen Guide
 ================
-2026-08-27
+2026-10-22
 
-This package provides functions for use in various parts of the data
-life cycle for data collected for the shared aspen monitoring protocol
-used by Mojave Desert Network (MOJN) and Upper Columbia Basin Network
-(UCBN). Currently, functionality exists for creating data package tables
-for publication, and further functions for QC and visualization are in
+This package provides tools for use in various parts of the data life
+cycle for aspen data collected under the shared monitoring protocol used
+by Mojave Desert Network (MOJN) and Upper Columbia Basin Network (UCBN).
+Currently, functionality exists for creating data package tables for
+publication and performing QC checks. Visualization functions are in
 development.
 
-### Installation
+## Installation
 
 If you already have a GitHub token for RStudio run the code below to
 download the aspen package. If you haven’t generated a GitHub token for
@@ -22,7 +22,7 @@ set it up and then run the following code to download the aspen package.
 devtools::install_github(repo = "nationalparkservice/mojn-aspen-rpackage")
 ```
 
-### AGOL Password
+## AGOL Connection
 
 In order to access the aspen data, you need AGOL credentials. It is
 recommended that you use a headless account and that you save the
@@ -43,10 +43,25 @@ keyring::key_set(service = "AGOL", username = "USERNAME", prompt = "Password for
 keyring::key_get(service = "AGOL", username = "USERNAME")
 ```
 
-### Functions
+## Functions
 
-Data Publication
+Examples of package functionality. For more information see function
+documentation.
 
-- loadAndPackageAspen(): loads aspen data associated with either network
-  from AGOL and wrangles into data package-formatted tables for
+#### Data Publication
+
+- loadAndPackageAspen(): loads aspen data associated with either MOJN or
+  UCBN from AGOL and wrangles into data package-formatted tables for
   publication.
+
+#### Quality Control (QC)
+
+- checkSiteAspen(): checkd that each site visit has at least one live
+  aspen recorded
+- checkTreeCount(): checks for tree records in the Observations table
+  that have a total count of zero or a total count greater than 250
+- checkTreeID(): checks for trees that have not been identified
+
+#### Visualization
+
+Coming soon.
