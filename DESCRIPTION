@@ -14,6 +14,7 @@ Roxygen: list(markdown = TRUE)
 Imports: 
     dplyr,
     fetchagol,
+    here,
     janitor,
     keyring,
     magrittr,

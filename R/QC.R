@@ -1,7 +1,7 @@
 # Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
 globalVariables(c(
   "rows", "speciesCode", "sizeClass", "individualCount", "totalTreeCount", "Status",
-  "year"
+  "year", "disturbance", "pest"
 ))
 
 #' Check that all site visits have at least one observation

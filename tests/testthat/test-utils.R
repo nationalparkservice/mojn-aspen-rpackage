@@ -168,18 +168,18 @@ test_that("wrangleUCBNObservations works", {
 })
 
 # Helper tests ----
-test_that("get_network works", {
+test_that("..get_network works", {
 
   # Test raw
-  raw_mojn <- get_network(mojn_raw, raw = TRUE)
+  raw_mojn <- .get_network(mojn_raw, raw = TRUE)
   expect_equal(raw_mojn, "MOJN")
-  raw_ucbn <- get_network(ucbn_raw, raw = TRUE)
+  raw_ucbn <- .get_network(ucbn_raw, raw = TRUE)
   expect_equal(raw_ucbn, "UCBN")
 
   # Test packaged
-  mojn <- get_network(mojn_packaged)
+  mojn <- .get_network(mojn_packaged)
   expect_equal(mojn, "MOJN")
-  ucbn <- get_network(ucbn_packaged)
+  ucbn <- .get_network(ucbn_packaged)
   expect_equal(ucbn, "UCBN")
 })
 
