@@ -33,7 +33,7 @@ below. The code should only have to be run once.
 It is also recommended that the metadata in your aspen AGOL database is
 filled out and up to date. Instructions for filling out AGOL metadata
 can be found
-\[here\](<https://github.com/nationalparkservice/imd-fetchagol-package>.
+[here](https://github.com/nationalparkservice/imd-fetchagol-package).
 
 ``` r
 # Run the function below. Change the username field to the username of your headless account and input the password when prompted
@@ -52,11 +52,11 @@ documentation.
 
 - loadAndPackageAspen(): loads aspen data associated with either MOJN or
   UCBN from AGOL and wrangles into data package-formatted tables for
-  publication.
+  publication
 
 #### Quality Control (QC)
 
-- checkSiteAspen(): checkd that each site visit has at least one live
+- checkSiteAspen(): checks that each site visit has at least one live
   aspen recorded
 - checkTreeCount(): checks for tree records in the Observations table
   that have a total count of zero or a total count greater than 250

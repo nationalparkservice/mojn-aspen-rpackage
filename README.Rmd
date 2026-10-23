@@ -20,7 +20,7 @@ devtools::install_github(repo = "nationalparkservice/mojn-aspen-rpackage")
 
 In order to access the aspen data, you need AGOL credentials. It is recommended that you use a headless account and that you save the password to your AGOL headless account using the keyring package in R. To add account information to the default keyring follow the steps below. The code should only have to be run once.
 
-It is also recommended that the metadata in your aspen AGOL database is filled out and up to date. Instructions for filling out AGOL metadata can be found [here](https://github.com/nationalparkservice/imd-fetchagol-package. 
+It is also recommended that the metadata in your aspen AGOL database is filled out and up to date. Instructions for filling out AGOL metadata can be found [here](https://github.com/nationalparkservice/imd-fetchagol-package). 
 
 ```{r, eval = FALSE}
 # Run the function below. Change the username field to the username of your headless account and input the password when prompted
@@ -37,14 +37,14 @@ Examples of package functionality. For more information see function documentati
 
 #### Data Publication
 
-- loadAndPackageAspen(): loads aspen data associated with either MOJN or UCBN from AGOL and wrangles into data package-formatted tables for publication. 
+- loadAndPackageAspen(): loads aspen data associated with either MOJN or UCBN from AGOL and wrangles into data package-formatted tables for publication
 
 #### Quality Control (QC)
 
-- checkSiteAspen(): checkd that each site visit has at least one live aspen recorded
+- checkSiteAspen(): checks that each site visit has at least one live aspen recorded
 - checkTreeCount(): checks for tree records in the Observations table that have a total count of zero or a total count greater than 250
 - checkTreeID(): checks for trees that have not been identified
 
 #### Visualization
 
-Coming soon.
+In development.

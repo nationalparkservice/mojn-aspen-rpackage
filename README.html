@@ -625,7 +625,7 @@ To add account information to the default keyring follow the steps
 below. The code should only have to be run once.</p>
 <p>It is also recommended that the metadata in your aspen AGOL database
 is filled out and up to date. Instructions for filling out AGOL metadata
-can be found [here](<a href="https://github.com/nationalparkservice/imd-fetchagol-package">https://github.com/nationalparkservice/imd-fetchagol-package</a>.</p>
+can be found <a href="https://github.com/nationalparkservice/imd-fetchagol-package">here</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Run the function below. Change the username field to the username of your headless account and input the password when prompted</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>keyring<span class="sc">::</span><span class="fu">key_set</span>(<span class="at">service =</span> <span class="st">&quot;AGOL&quot;</span>, <span class="at">username =</span> <span class="st">&quot;USERNAME&quot;</span>, <span class="at">prompt =</span> <span class="st">&quot;Password for headless account: &quot;</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
@@ -638,11 +638,11 @@ documentation.</p>
 <ul>
 <li>loadAndPackageAspen(): loads aspen data associated with either MOJN
 or UCBN from AGOL and wrangles into data package-formatted tables for
-publication.</li>
+publication</li>
 </ul>
 <h4 id="quality-control-qc">Quality Control (QC)</h4>
 <ul>
-<li>checkSiteAspen(): checkd that each site visit has at least one live
+<li>checkSiteAspen(): checks that each site visit has at least one live
 aspen recorded</li>
 <li>checkTreeCount(): checks for tree records in the Observations table
 that have a total count of zero or a total count greater than 250</li>
