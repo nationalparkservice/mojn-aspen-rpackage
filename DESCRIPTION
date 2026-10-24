@@ -21,7 +21,8 @@ Imports:
     QCkit,
     taxize,
     tidyr,
-    ucbn
+    ucbn,
+    utils
 Suggests: 
     lubridate,
     stringr,

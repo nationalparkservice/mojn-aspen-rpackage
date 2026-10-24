@@ -53,6 +53,7 @@ documentation.
 - loadAndPackageAspen(): loads aspen data associated with either MOJN or
   UCBN from AGOL and wrangles into data package-formatted tables for
   publication
+- writeAspen(): writes the loaded and wrangled aspen data to CSV files
 
 #### Quality Control (QC)
 
@@ -64,4 +65,4 @@ documentation.
 
 #### Visualization
 
-Coming soon.
+In development.
