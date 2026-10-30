@@ -1,11 +1,15 @@
 Aspen Guide
 ================
-2024-06-20
+2026-10-22
 
-The goal of the aspen package is to provide data QC, visualization, and
-publication assistance for MOJN aspen data.
+This package provides tools for use in various parts of the data life
+cycle for aspen data collected under the shared monitoring protocol used
+by Mojave Desert Network (MOJN) and Upper Columbia Basin Network (UCBN).
+Currently, functionality exists for creating data package tables for
+publication and performing QC checks. Visualization functions are in
+development.
 
-### Installation
+## Installation
 
 If you already have a GitHub token for RStudio run the code below to
 download the aspen package. If you haven’t generated a GitHub token for
@@ -18,17 +22,18 @@ set it up and then run the following code to download the aspen package.
 devtools::install_github(repo = "nationalparkservice/mojn-aspen-rpackage")
 ```
 
-### Metadata and AGOL Password
+## AGOL Connection
 
-Before running any of the functions in the package you should check that
-the data in you aspen AGOL database is filled out. Instructions for
-filling out AGOL metadata can be found
-\[here\](<https://github.com/nationalparkservice/imd-fetchagol-package>.
-
-Before running the functions, it is also recommended that you save the
+In order to access the aspen data, you need AGOL credentials. It is
+recommended that you use a headless account and that you save the
 password to your AGOL headless account using the keyring package in R.
-To add headless account information to the default keyring follow the
-steps below. The code should only have to be run once.
+To add account information to the default keyring follow the steps
+below. The code should only have to be run once.
+
+It is also recommended that the metadata in your aspen AGOL database is
+filled out and up to date. Instructions for filling out AGOL metadata
+can be found
+[here](https://github.com/nationalparkservice/imd-fetchagol-package).
 
 ``` r
 # Run the function below. Change the username field to the username of your headless account and input the password when prompted
@@ -38,21 +43,26 @@ keyring::key_set(service = "AGOL", username = "USERNAME", prompt = "Password for
 keyring::key_get(service = "AGOL", username = "USERNAME")
 ```
 
-### Functions
+## Functions
 
-A short summary of what this package contains. For more information see
-function documentation.
+Examples of package functionality. For more information see function
+documentation.
 
-- loadAndWrangleMOJNAspen(): load MOJN aspen data from AGOL into R and
-  perform some basic data wrangling
-- loadAndWrangleUCBNAspen(): load UCBN aspen data from AGOL into R and
-  perform some basic data wrangling
-- writeAspen(): write aspen data and metadata to CSVs
+#### Data Publication
 
-In addition to these functions the aspen package has some quality
-control functions, a quality control script, and a visualization script.
-To learn more about the functions see package documentation. You can
-find the scripts in the script folder of the [GitHub
-repo](https://github.com/nationalparkservice/mojn-aspen-rpackage) or if
-you cloned the GitHub repo to your desktop you can open the files from
-there. Download, open, and then run the .qmd file to see the results.
+- loadAndPackageAspen(): loads aspen data associated with either MOJN or
+  UCBN from AGOL and wrangles into data package-formatted tables for
+  publication
+- writeAspen(): writes the loaded and wrangled aspen data to CSV files
+
+#### Quality Control (QC)
+
+- checkSiteAspen(): checks that each site visit has at least one live
+  aspen recorded
+- checkTreeCount(): checks for tree records in the Observations table
+  that have a total count of zero or a total count greater than 250
+- checkTreeID(): checks for trees that have not been identified
+
+#### Visualization
+
+In development.

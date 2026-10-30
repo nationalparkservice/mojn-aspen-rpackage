@@ -3,15 +3,15 @@
 mojn_wrangle_test_data <- test_path("mojn_wrangle_test_data.rds")
 
 if (file.exists(mojn_wrangle_test_data)) {
-  mojn_data <- readRDS(mojn_wrangle_test_data)
+  mojn_raw <- readRDS(mojn_wrangle_test_data)
 
   # Create data for testing each fx
-  mojn_wrangled_sites <- wrangleMOJNSites(mojn_data)
+  mojn_wrangled_sites <- wrangleMOJNSites(mojn_raw)
   mojn_wrangled_sitevisit <- wrangleMOJNSiteVisit(mojn_wrangled_sites)
   mojn_wrangled_disturbance <- wrangleMOJNDisturbances(mojn_wrangled_sitevisit)
   mojn_wrangled_observations <- wrangleMOJNObservations(mojn_wrangled_disturbance)
   mojn_wrangled_pests <- wrangleMOJNPests(mojn_wrangled_observations)
-  mojn_packaged <- packageMOJNAspen(mojn_wrangled_pests)
+  mojn_packaged <- packageAspen(mojn_wrangled_pests)
 }
 
 # wrangleMOJNSites
@@ -92,44 +92,20 @@ test_that("wrangleMOJNPests works", {
   expect_false("globalid" %in% names(mojn_wrangled_pests$data$Observations))
 })
 
-# packageMOJNAspen
-test_that("packageMOJNAspen works", {
-  skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for packageMOJNAspen, MOJN data for testing wrangle and package functions not available.")
-
-  # Test removal of metadata and sites tbl
-  expect_false("metadata" %in% names(mojn_packaged))
-  expect_false("AllSites" %in% names(mojn_packaged$data))
-
-  # Test column additions/renames
-  for (tbl_name in names(mojn_packaged$data)) {
-    tbl <- mojn_packaged$data[[tbl_name]]
-
-    expect_contains(names(tbl), c("type", "basisOfRecord", "siteID"))
-    basisOfRecord_value <- ifelse(tbl_name == "SiteVisit", "Event", "HumanObservation")
-    expect_all_true(tbl$basisOfRecord == basisOfRecord_value)
-  }
-
-  # Test taxonomy changes
-  for (tbl in c("Observations", "Pests")) {
-    expect_all_true(c("verbatimIdentification", "scientificName", "taxonRank") %in% names(mojn_packaged$data[[tbl]]))
-    expect_false("Pinus longeava" %in% unique(mojn_packaged$data[[tbl]]$scientificName))
-  }
-})
-
 # UCBN tests ----
 # Read in saved UCBN data for testing - object has both db and sites tbls and went through fetchagol::cleanData()
 ucbn_wrangle_test_data <- test_path("ucbn_wrangle_test_data.rds")
 
 if (file.exists(ucbn_wrangle_test_data)) {
-  ucbn_data <- readRDS(ucbn_wrangle_test_data)
+  ucbn_raw <- readRDS(ucbn_wrangle_test_data)
 
   # Create data for testing each fx
-  ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_data)
+  ucbn_wrangled_sites <- wrangleUCBNSites(ucbn_raw)
   ucbn_wrangled_sitevisit <- wrangleUCBNSiteVisit(ucbn_wrangled_sites)
   ucbn_wrangled_disturbance <- wrangleUCBNDisturbances(ucbn_wrangled_sitevisit)
   ucbn_wrangled_observations <- wrangleUCBNObservations(ucbn_wrangled_disturbance)
   ucbn_wrangled_pests <- wrangleUCBNPests(ucbn_wrangled_observations)
-  ucbn_packaged <- packageUCBNAspen(ucbn_wrangled_pests)
+  ucbn_packaged <- packageAspen(ucbn_wrangled_pests)
 }
 
 # wrangleUCBNSites
@@ -137,7 +113,7 @@ test_that("wrangleUCBNSites works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleUCBNSites, UCBN data for testing wrangle functions not available.")
 
   # Test column additions/renames are present
-  expect_equal(names(ucbn_wrangled_sites$data$Locations), c("Loc_Name", "verbatimCoordinateSystem", "verbatimSRS", "verbatimCoordinates", "geodeticDatum", "decimalLatitude", "decimalLongitude", "elevationInMeters", "slopeInPercent", "aspectInDegrees"))
+  expect_equal(names(ucbn_wrangled_sites$data$Locations), c("Loc_Name", "visitType", "verbatimCoordinateSystem", "verbatimSRS", "verbatimCoordinates", "geodeticDatum", "decimalLatitude", "decimalLongitude", "elevationInMeters", "slopeInPercent", "aspectInDegrees"))
 })
 
 # wrangleUCBNSiteVisist
@@ -191,42 +167,19 @@ test_that("wrangleUCBNObservations works", {
   expect_false("globalid" %in% names(ucbn_wrangled_pests$data$Observations))
 })
 
-# packageUCBNAspen
-test_that("packageUCBNAspen works", {
-  skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for packageUCBNAspen, UCBN data for testing wrangle and package functions not available.")
-
-  # Test removal of metadata and tbls
-  expect_equal(names(ucbn_packaged), "data")
-  expect_all_false(c("begin_image_repeat", "Locations") %in% names(ucbn_packaged$data))
-
-  # Test column additions/renames
-  for (tbl_name in names(ucbn_packaged$data)) {
-    tbl <- ucbn_packaged$data[[tbl_name]]
-
-    expect_contains(names(tbl), c("type", "basisOfRecord"))
-    basisOfRecord_value <- ifelse(tbl_name == "SiteVisit", "Event", "HumanObservation")
-    expect_all_true(tbl$basisOfRecord == basisOfRecord_value)
-  }
-
-  # Test taxonomy changes
-  for (tbl in c("Observations", "Pests")) {
-    expect_all_true(c("verbatimIdentification", "scientificName", "taxonRank") %in% names(ucbn_packaged$data[[tbl]]))
-  }
-})
-
 # Helper tests ----
-test_that("get_network works", {
+test_that("..get_network works", {
 
   # Test raw
-  raw_mojn <- get_network(mojn_data, raw = TRUE)
+  raw_mojn <- .get_network(mojn_raw, raw = TRUE)
   expect_equal(raw_mojn, "MOJN")
-  raw_ucbn <- get_network(ucbn_data, raw = TRUE)
+  raw_ucbn <- .get_network(ucbn_raw, raw = TRUE)
   expect_equal(raw_ucbn, "UCBN")
 
   # Test packaged
-  mojn <- get_network(mojn_packaged)
+  mojn <- .get_network(mojn_packaged)
   expect_equal(mojn, "MOJN")
-  ucbn <- get_network(ucbn_packaged)
+  ucbn <- .get_network(ucbn_packaged)
   expect_equal(ucbn, "UCBN")
 })
 
@@ -234,12 +187,12 @@ test_that("get_network works", {
 # wrangleSites
 test_that("wrangleSites works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangleSites, MOJN data for testing wrangle functions not available.")
-  expect_equal(wrangleSites(mojn_data), mojn_wrangled_sites)
+  expect_equal(wrangleSites(mojn_raw), mojn_wrangled_sites)
 })
 
 test_that("wrangleSites works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangleSites, UCBN data for testing wrangle functions not available.")
-  expect_equal(wrangleSites(ucbn_data), ucbn_wrangled_sites)
+  expect_equal(wrangleSites(ucbn_raw), ucbn_wrangled_sites)
 })
 
 # wrangleSiteVisit
@@ -289,37 +242,104 @@ test_that("wranglePests works for UCBN data", {
 # packageAspen
 test_that("packageAspen works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for packageAspen, MOJN data for testing wrangle functions not available.")
-  expect_equal(packageAspen(mojn_wrangled_pests), mojn_packaged)
+
+  # Test removal of metadata and sites tbl
+  expect_false("metadata" %in% names(mojn_packaged))
+  expect_false("AllSites" %in% names(mojn_packaged$data))
+
+  # Test column additions/renames
+  for (tbl_name in names(mojn_packaged$data)) {
+    tbl <- mojn_packaged$data[[tbl_name]]
+
+    expect_contains(names(tbl), c("type", "basisOfRecord", "siteID"))
+    basisOfRecord_value <- ifelse(tbl_name == "SiteVisit", "Event", "HumanObservation")
+    expect_all_true(tbl$basisOfRecord == basisOfRecord_value)
+  }
+
+  # Test taxonomy changes
+  for (tbl in c("Observations", "Pests")) {
+    expect_all_true(c("verbatimIdentification", "scientificName", "taxonRank") %in% names(mojn_packaged$data[[tbl]]))
+    expect_false("Pinus longeava" %in% unique(mojn_packaged$data[[tbl]]$scientificName))
+  }
 })
 
 test_that("packageAspen works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for packageAspen, UCBN data for testing wrangle functions not available.")
-  expect_equal(packageAspen(ucbn_wrangled_pests), ucbn_packaged)
+
+  # Test removal of metadata and tbls
+  expect_equal(names(ucbn_packaged), "data")
+  expect_all_false(c("begin_image_repeat", "Locations") %in% names(ucbn_packaged$data))
+
+  # Test column additions/renames
+  for (tbl_name in names(ucbn_packaged$data)) {
+    tbl <- ucbn_packaged$data[[tbl_name]]
+
+    expect_contains(names(tbl), c("type", "basisOfRecord"))
+    basisOfRecord_value <- ifelse(tbl_name == "SiteVisit", "Event", "HumanObservation")
+    expect_all_true(tbl$basisOfRecord == basisOfRecord_value)
+  }
+
+  # Test taxonomy changes
+  for (tbl in c("Observations", "Pests")) {
+    expect_all_true(c("verbatimIdentification", "scientificName", "taxonRank") %in% names(ucbn_packaged$data[[tbl]]))
+  }
 })
 
 # loadAndPackageAspen
 test_that("loadAndPackageAspen() works", {
   expect_error(loadAndPackageAspen(network = "mojave desert network", agol_username = "placeholder", agol_password = "placeholder"))
 
-  mojn_output <- loadAndPackageAspen(network = "MOJN")
-
   # Test that fx only returns data
-  expect_equal(names(mojn_output), "data")
+  expect_equal(names(mojn_data), "data")
 
   # Test that dataframes have expected names
-  expect_named(mojn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+  expect_named(mojn_data$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
 
   # Test that all are dataframes
-  lapply(mojn_output$data, expect_s3_class, "data.frame")
-
-  ucbn_output <- loadAndPackageAspen(network = "UCBN")
+  lapply(mojn_data$data, expect_s3_class, "data.frame")
 
   # Test that fx only returns data
-  expect_equal(names(ucbn_output), "data")
+  expect_equal(names(ucbn_data), "data")
 
   # Test that dataframes have expected names
-  expect_named(ucbn_output$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
+  expect_named(ucbn_data$data, c("SiteVisit", "Disturbances", "Observations", "Pests"))
 
   # Test that all are dataframes
-  lapply(ucbn_output$data, expect_s3_class, "data.frame")
+  lapply(ucbn_data$data, expect_s3_class, "data.frame")
+})
+
+# Write tests ----
+test_that("writeAspen creates folder and CSV files", {
+  test_aspen1 <- list(
+    SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
+    Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
+  )
+
+  expect_error(writeAspen(test_aspen1),
+               regexp = "Data must be in the format returned by `loadAndWrangleAspen()`.",
+               fixed = TRUE)
+
+  test_aspen2 <- list(
+    data = list(
+      SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
+      Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
+    )
+  )
+
+  folder <- here::here("aspen_data_package")
+
+  if (dir.exists(folder)) {
+    unlink(folder, recursive = TRUE)
+  }
+
+  writeAspen(test_aspen2)
+
+  expect_true(dir.exists(folder))
+  expect_true(file.exists(file.path(folder, "MOJN_Aspen_SiteVisit.csv")))
+  expect_true(file.exists(file.path(folder, "MOJN_Aspen_Observations.csv")))
+  SiteVisit <- read.csv(file.path(folder, "MOJN_Aspen_SiteVisit.csv"))
+  expect_equal(nrow(SiteVisit), 1)
+  expect_equal(SiteVisit$unitCode, "GRBA")
+
+  unlink(folder, recursive = TRUE)
 })
