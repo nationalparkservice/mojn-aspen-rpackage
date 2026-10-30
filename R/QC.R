@@ -11,8 +11,8 @@ globalVariables(c(
 #' @returns Table containing site visits that do not have at least one observation
 #' @export
 checkSiteVisits <- function(aspen_data) {
-  visits <- aspen_data$data$SiteVisit %>% dplyr::distinct(siteID, eventDate)
-  obs <- aspen_data$data$Observations %>% dplyr::distinct(siteID, eventDate)
+  visits <- aspen_data$data$SiteVisit %>% dplyr::distinct(siteID, eventDate, visitType)
+  obs <- aspen_data$data$Observations %>% dplyr::distinct(siteID, eventDate, visitType)
 
   # Identify site visits that are not in the Observations tbl
   visits_without_obs <- dplyr::setdiff(visits, obs)
@@ -21,7 +21,7 @@ checkSiteVisits <- function(aspen_data) {
 
   tbl <- dplyr::semi_join(aspen_data$data$SiteVisit,
                           visits_without_obs,
-                          by = c("siteID", "eventDate")) %>%
+                          by = c("siteID", "eventDate", "visitType")) %>%
     dplyr::select(dplyr::any_of(select_cols))
 
   return(tbl)
@@ -55,7 +55,7 @@ checkDuplicateSiteVisits <- function(aspen_data) {
 #' @export
 checkSiteAspen <- function(aspen_data) {
   live_aspen <- aspen_data$data$Observations %>%
-    dplyr::group_by(siteID, eventDate) %>%
+    dplyr::group_by(siteID, eventDate, visitType) %>%
     dplyr::filter(scientificName == "Populus tremuloides" &
                     sizeClass %in% c("Class I", "Class II", "Class III", "Class IV", "Class V") &
                     individualCount > 0) %>%
@@ -80,7 +80,7 @@ checkSiteAspen <- function(aspen_data) {
 checkTreeCount <- function(aspen_data) {
   # Calculate total count by tree for each site visit
   tree_counts <- aspen_data$data$Observations %>%
-    dplyr::group_by(siteID, eventDate, scientificName) %>%
+    dplyr::group_by(siteID, eventDate, visitType, scientificName) %>%
     dplyr::summarise(totalTreeCount = sum(individualCount),
                      .groups = "drop") %>%
     # Filter to zero or >250 counts
@@ -96,16 +96,18 @@ checkTreeCount <- function(aspen_data) {
 #' @returns Table containing duplicate tree records in the Observations table
 #' @export
 checkDuplicateTrees <- function(aspen_data) {
+  # Identify duplicate tree records
   dup_trees <- aspen_data$data$Observations %>%
-    dplyr::group_by(siteID, eventDate, scientificName) %>%
+    dplyr::group_by(siteID, eventDate, scientificName, visitType, sizeClass) %>%
     dplyr::summarise(rows = n(), .groups = "drop") %>%
-    dplyr::filter(rows > 6) # six size classes = one tree record, multiples of 6 = duplicate
+    dplyr::filter(rows > 1)
 
   tbl <- aspen_data$data$Observations %>%
     dplyr::semi_join(dup_trees %>%
                        dplyr::select(-rows),
-                     by = c("siteID", "eventDate", "scientificName")) %>%
-    dplyr::select(unitCode, siteID, eventDate, speciesCode, scientificName, sizeClass, individualCount)
+                     by = c("siteID", "eventDate", "scientificName", "visitType", "sizeClass")) %>%
+    dplyr::select(unitCode, siteID, eventDate, visitType, speciesCode, scientificName, sizeClass, individualCount) %>%
+    dplyr::arrange(siteID, eventDate, scientificName, sizeClass, visitType)
 
   return(tbl)
 }
@@ -124,7 +126,7 @@ checkDuplicateTrees <- function(aspen_data) {
 checkTreeID <- function(aspen_data) {
   tbl <- aspen_data$data$Observations %>%
     dplyr::filter(is.na(speciesCode) | is.na(verbatimIdentification) | is.na(scientificName)) %>%
-    dplyr::select(unitCode, siteID, eventDate, speciesCode, verbatimIdentification, scientificName, sizeClass, individualCount)  %>%
+    dplyr::select(unitCode, siteID, eventDate, visitType, speciesCode, verbatimIdentification, scientificName, sizeClass, individualCount)  %>%
     dplyr::group_by(unitCode, siteID, eventDate, speciesCode, verbatimIdentification, scientificName) %>%
     dplyr::summarise(hasLiveTree = any(sizeClass %in% c("Class I", "Class II", "Class III", "Class IV", "Class V") & individualCount > 0),
                      .groups = "drop")

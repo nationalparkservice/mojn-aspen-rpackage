@@ -4,45 +4,69 @@ test_data_fail <- list(
     SiteVisit = dplyr::tribble(
       ~unitCode, ~siteID,      ~eventDate,   ~stratum,     ~zone,                   ~visitType,  ~fieldSeason,  ~observer,  ~visitNotes,
       "GRBA",    "GRBA_A_063", "2021-09-03", "Lexington",  "Lexington Creek",       "Primary",   "GRBA_2021",   "SJU",      "No matching obs",
-      "GRBA",    "GRBA_A_063", "2021-09-04", "Lexington",  "Lexington Creek",       "Duplicate", "GRBA_2021",   "SJU",      "Duplicate site visit",
-      "GRBA",    "GRBA_A_390", "2022-07-11", "Strawberry", "Strawberry Creek",      "Primary",   "GRBA_2022",   "HTP",       "Missing tree ID with live trees",
-      "GRBA",    "GRBA_A_460", "2023-09-12", "West Snake", "Pine and Ridge Creeks", "Primary",   "GRBA_2023",   "KUY",       "Missing tree ID without live trees",
+      "GRBA",    "GRBA_A_063", "2022-09-04", "Lexington",  "Lexington Creek",       "Primary",   "GRBA_2022",   "SJU",      "Duplicate tree records",
+      "GRBA",    "GRBA_A_390", "2022-07-11", "Strawberry", "Strawberry Creek",      "Primary",   "GRBA_2022",   "HTP",      "Missing tree ID with live trees",
       "GRBA",    "GRBA_A_143", "2023-09-06", "Snake",      "Snake Creek",           "Primary",   "GRBA_2023",   "RW",       "0 count",
-      "GRBA",    "GRBA_A_061", "2026-07-11", "Lexington",  "South Fork Big Wash",   "Primary",   "GRBA_2026",   "QQ",       "Duplicate tree records, >250 count"
+      "GRBA",    "GRBA_A_460", "2023-09-12", "West Snake", "Pine and Ridge Creeks", "Primary",   "GRBA_2023",   "KUY",      "Missing tree ID without live trees",
+      "GRBA",    "GRBA_A_111", "2024-09-14", "Snake",      "Snake Creek",           NA,          "GRBA_2024",   "RW",       "Duplicate site visit, test NA visitType",
+      "GRBA",    "GRBA_A_111", "2024-09-22", "Snake",      "Snake Creek",           NA,          "GRBA_2024",   "RW",       "Duplicate site visit, Test NA visitType",
+      "GRBA",    "GRBA_A_061", "2026-07-11", "Lexington",  "South Fork Big Wash",   "Primary",   "GRBA_2026",   "QQ",       ">250 count"
     ),
 
     Observations = dplyr::tribble(
-      ~unitCode, ~siteID,  ~eventDate,   ~speciesCode, ~verbatimIdentification, ~scientificName,       ~sizeClass,  ~individualCount,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   0,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  0,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 0,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  0,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   0,
-      "GRBA",  "GRBA_A_143", "2023-09-06", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  0,
-      "GRBA",  "GRBA_A_390", "2022-07-11", NA,           NA,                      NA,                    "Class I",   0,
-      "GRBA",  "GRBA_A_390", "2022-07-11", NA,           NA,                      NA,                    "Class II",  3,
-      "GRBA",  "GRBA_A_390", "2022-07-11", NA,           NA,                      NA,                    "Class III", 0,
-      "GRBA",  "GRBA_A_390", "2022-07-11", NA,           NA,                      NA,                    "Class IV",  0,
-      "GRBA",  "GRBA_A_390", "2022-07-11", NA,           NA,                      NA,                    "Class V",   0,
-      "GRBA",  "GRBA_A_390", "2022-07-11", NA,           NA,                      NA,                    "Class VI",  0,
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",        "Unknown",               NA,                    "Class I",   0,
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",        "Unknown",               NA,                    "Class II",  0,
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",        "Unknown",               NA,                    "Class III", 0,
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",        "Unknown",               NA,                    "Class IV",  0,
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",        "Unknown",               NA,                    "Class V",   0,
-      "GRBA",  "GRBA_A_460", "2023-09-12", "UNK",        "Unknown",               NA,                    "Class VI",  1,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   50,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  50,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 50,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  50,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   50,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  50,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   4,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  0,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 7,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  22,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   6,
-      "GRBA",  "GRBA_A_061", "2026-07-11", "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  3
+      ~unitCode, ~siteID,  ~eventDate,     ~visitType,  ~speciesCode, ~verbatimIdentification, ~scientificName,       ~sizeClass,  ~individualCount,
+      # Duplicate tree records
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   4,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  7,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  4,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 1,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 3,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  1,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  1,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   1,
+      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  2,
+      # Missing tree ID with live trees
+      "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class I",   0,
+      "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class II",  3,
+      "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class III", 0,
+      "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class IV",  0,
+      "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class V",   0,
+      "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class VI",  0,
+      # 0 count
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary",    "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   0,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary",    "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  0,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary",    "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 0,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary",    "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  0,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary",    "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   0,
+      "GRBA",  "GRBA_A_143", "2023-09-06", "Primary",    "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  0,
+      # Missing tree ID without live trees
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary",     "UNK",        "Unknown",               NA,                    "Class I",   0,
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary",     "UNK",        "Unknown",               NA,                    "Class II",  0,
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary",     "UNK",        "Unknown",               NA,                    "Class III", 0,
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary",     "UNK",        "Unknown",               NA,                    "Class IV",  0,
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary",     "UNK",        "Unknown",               NA,                    "Class V",   0,
+      "GRBA",  "GRBA_A_460", "2023-09-12", "Primary",     "UNK",        "Unknown",               NA,                    "Class VI",  1,
+      # Duplicate site visit
+      "GRBA",  "GRBA_A_111", "2024-09-14", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   4,
+      "GRBA",  "GRBA_A_111", "2024-09-14", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  7,
+      "GRBA",  "GRBA_A_111", "2024-09-14", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 3,
+      "GRBA",  "GRBA_A_111", "2024-09-14", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  14,
+      "GRBA",  "GRBA_A_111", "2024-09-14", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   6,
+      "GRBA",  "GRBA_A_111", "2024-09-14", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  0,
+      # Duplicate site visit
+      "GRBA",  "GRBA_A_111", "2024-09-22", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   0,
+      "GRBA",  "GRBA_A_111", "2024-09-22", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  2,
+      "GRBA",  "GRBA_A_111", "2024-09-22", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 3,
+      "GRBA",  "GRBA_A_111", "2024-09-22", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  1,
+      "GRBA",  "GRBA_A_111", "2024-09-22", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   1,
+      "GRBA",  "GRBA_A_111", "2024-09-22", NA,           "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  0,
+      # >250 count
+      "GRBA",  "GRBA_A_061", "2026-07-11", "Primary",     "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   50,
+      "GRBA",  "GRBA_A_061", "2026-07-11", "Primary",     "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  50,
+      "GRBA",  "GRBA_A_061", "2026-07-11", "Primary",     "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 50,
+      "GRBA",  "GRBA_A_061", "2026-07-11", "Primary",     "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  50,
+      "GRBA",  "GRBA_A_061", "2026-07-11", "Primary",     "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   50,
+      "GRBA",  "GRBA_A_061", "2026-07-11", "Primary",     "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  50,
     ),
 
     Pests = dplyr::tribble(
@@ -71,7 +95,7 @@ test_that("checkSiteVisits works for pass and fail", {
   # test fail behavior (tbl output)
   fail <- checkSiteVisits(test_data_fail)
 
-  expect_equal(nrow(fail), 2)
+  expect_equal(nrow(fail), 1)
   expect_equal(ncol(fail), 7) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
   expect_equal(unique(fail$siteID), "GRBA_A_063")
@@ -89,7 +113,7 @@ test_that("checkDuplicateSiteVisits works for pass and fail", {
   fail <- checkDuplicateSiteVisits(test_data_fail)
 
   expect_equal(nrow(fail), 2)
-  expect_equal(unique(fail$siteID), "GRBA_A_063")
+  expect_equal(unique(fail$siteID), "GRBA_A_111")
   expect_equal(ncol(fail), 7) # MOJN col names
   expect_equal(names(fail), c("unitCode", "siteID", "year", "eventDate", "visitType",
                               "fieldSeason", "visitNotes"))
@@ -107,8 +131,8 @@ test_that("checkSiteAspen works for pass and fail", {
   # test fail behavior
   fail <- checkSiteAspen(test_data_fail)
 
-  expect_equal(nrow(fail), 5)
-  expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_460", "GRBA_A_143"))
+  expect_equal(nrow(fail), 4)
+  expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_143", "GRBA_A_460"))
   expect_equal(ncol(fail), 7) # MOJN col names
   expect_equal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
 
@@ -125,7 +149,7 @@ test_that("checkTreeCount works for pass and fail", {
   fail <- checkTreeCount(test_data_fail)
 
   expect_equal(nrow(fail), 2)
-  expect_equal(ncol(fail), 4)
+  expect_equal(ncol(fail), 5)
   expect_setequal(c("GRBA_A_061", "GRBA_A_143"), unique(fail$siteID))
   expect_all_true(fail$totalTreeCount < 1 | fail$totalTreeCount > 250)
 
@@ -141,10 +165,10 @@ test_that("checkDuplicateTrees works for pass and fail", {
   # test fail behavior
   fail <- checkDuplicateTrees(test_data_fail)
 
-  expect_equal(nrow(fail), 12)
-  expect_all_true(fail$siteID == "GRBA_A_061")
+  expect_equal(nrow(fail), 6)
+  expect_all_true(fail$siteID == "GRBA_A_063")
   expect_all_true(fail$scientificName == "Populus tremuloides")
-  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "scientificName", "sizeClass", "individualCount"))
+  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "visitType", "speciesCode", "scientificName", "sizeClass", "individualCount"))
 
   # test pass behavior
   pass <- checkDuplicateTrees(test_data_pass)
