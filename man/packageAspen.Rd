@@ -7,7 +7,7 @@
 packageAspen(aspen_data)
 }
 \arguments{
-\item{aspen_data}{List of tabular wrangled aspen data}
+\item{aspen_data}{List of tabular wrangled aspen data tables}
 }
 \value{
 aspen_data with data package formatting
