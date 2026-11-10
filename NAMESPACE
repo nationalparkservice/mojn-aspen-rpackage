@@ -9,9 +9,7 @@ export(checkSiteVisits)
 export(checkTreeCount)
 export(checkTreeID)
 export(loadAndPackageAspen)
+export(writeAspen)
 import(dplyr)
 import(fetchagol)
-importFrom(magrittr,
-  "%<>%",
-  "%>%"
-)
+importFrom(magrittr,"%>%")
