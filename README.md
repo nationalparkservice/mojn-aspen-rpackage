@@ -50,18 +50,18 @@ documentation.
 
 #### Data Publication
 
-- loadAndPackageAspen(): loads aspen data associated with either MOJN or
-  UCBN from AGOL and wrangles into data package-formatted tables for
+- load_and_package_aspen(): loads aspen data associated with either MOJN
+  or UCBN from AGOL and wrangles into data package-formatted tables for
   publication
-- writeAspen(): writes the loaded and wrangled aspen data to CSV files
+- write_aspen(): writes the loaded and wrangled aspen data to CSV files
 
 #### Quality Control (QC)
 
-- checkSiteAspen(): checks that each site visit has at least one live
+- check_site_aspen(): checks that each site visit has at least one live
   aspen recorded
-- checkTreeCount(): checks for tree records in the Observations table
+- check_tree_count(): checks for tree records in the Observations table
   that have a total count of zero or a total count greater than 250
-- checkTreeID(): checks for trees that have not been identified
+- check_tree_id(): checks for trees that have not been identified
 
 #### Visualization
 

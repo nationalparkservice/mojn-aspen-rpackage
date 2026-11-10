@@ -30,7 +30,7 @@ globalVariables(c(
 #' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master
 #'
 #' @returns raw_data with updated sites table
-wrangleMOJNSites <- function(raw_data) {
+wrangle_mojn_sites <- function(raw_data) {
   raw_data$data$AllSites <- raw_data$data$AllSites %>%
     # Remove trailing underscores from column names
     dplyr::rename_with(~ sub("_$", "", .x)) %>%
@@ -75,7 +75,7 @@ wrangleMOJNSites <- function(raw_data) {
 #' @param raw_data List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database
 #'
 #' @returns raw_data with updated site visit table
-wrangleMOJNSiteVisit <- function(raw_data) {
+wrangle_mojn_site_visit <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
     # Expand park code
     dplyr::left_join(raw_data$metadata$SiteVisit$fields$Park$lookup$lookup_df %>%
@@ -107,10 +107,10 @@ wrangleMOJNSiteVisit <- function(raw_data) {
 
 #' Wrangle MOJN disturbances table
 #'
-#' @inheritParams wrangleMOJNSiteVisit
+#' @inheritParams wrangle_mojn_site_visit
 #'
 #' @returns raw_data with updated disturbances table
-wrangleMOJNDisturbances <- function(raw_data) {
+wrangle_mojn_disturbances <- function(raw_data) {
   # Join site visit info to disturbance tbl
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
     dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
@@ -128,10 +128,10 @@ wrangleMOJNDisturbances <- function(raw_data) {
 
 #' Wrangle MOJN observations table
 #'
-#' @inheritParams wrangleMOJNSiteVisit
+#' @inheritParams wrangle_mojn_site_visit
 #'
 #' @returns raw_data with updated observations table
-wrangleMOJNObservations <- function(raw_data) {
+wrangle_mojn_observations <- function(raw_data) {
   # Join site visit info to observations tbl
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
     dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
@@ -175,10 +175,10 @@ wrangleMOJNObservations <- function(raw_data) {
 
 #' Wrangle MOJN pests table
 #'
-#' @inheritParams wrangleMOJNSiteVisit
+#' @inheritParams wrangle_mojn_site_visit
 #'
 #' @returns raw_data with updated pests table
-wrangleMOJNPests <- function(raw_data) {
+wrangle_mojn_pests <- function(raw_data) {
   # Join site visit and species info from observations tbl to pests
   raw_data$data$Pests <- raw_data$data$Observations %>%
     dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community, SpeciesCode, verbatimIdentification) %>%
@@ -203,7 +203,7 @@ wrangleMOJNPests <- function(raw_data) {
 #' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430
 #'
 #' @returns raw_data with updated sites table
-wrangleUCBNSites <- function(raw_data) {
+wrangle_ucbn_sites <- function(raw_data) {
   raw_data$data$Locations <- raw_data$data$Locations %>%
     # Generate lat/long coordinates from UTM
     QCkit::generate_ll_from_utm(EastingCol = "X_Coord", NorthingCol = "Y_Coord", ZoneCol = "UTM_Zone", DatumCol = "Datum", latlong_datum = "WGS84") %>%
@@ -232,7 +232,7 @@ wrangleUCBNSites <- function(raw_data) {
 #' @param raw_data List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430 and 'UCBN Aspen Survey v1'
 #'
 #' @returns raw_data with updated sites table
-wrangleUCBNSiteVisit <- function(raw_data) {
+wrangle_ucbn_site_visit <- function(raw_data) {
   raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
     dplyr::mutate(
       # Expand park names
@@ -256,10 +256,10 @@ wrangleUCBNSiteVisit <- function(raw_data) {
 
 #' Wrangle UCBN disturbances table
 #'
-#' @inheritParams wrangleUCBNSiteVisit
+#' @inheritParams wrangle_ucbn_site_visit
 #'
 #' @returns raw_data with updated sites table
-wrangleUCBNDisturbances <- function(raw_data) {
+wrangle_ucbn_disturbances <- function(raw_data) {
   raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
     dplyr::select(parentglobalid = globalid, unitCode:eventDate) %>%
     dplyr::right_join(raw_data$data$Disturbances,
@@ -272,10 +272,10 @@ wrangleUCBNDisturbances <- function(raw_data) {
 
 #' Wrangle UCBN observations table
 #'
-#' @inheritParams wrangleUCBNSiteVisit
+#' @inheritParams wrangle_ucbn_site_visit
 #'
 #' @returns raw_data with updated sites table
-wrangleUCBNObservations <- function(raw_data) {
+wrangle_ucbn_observations <- function(raw_data) {
   raw_data$data$Observations <- raw_data$data$SiteVisit %>%
     dplyr::select(parentglobalid = globalid, unitCode:visitType) %>%
     dplyr::right_join(raw_data$data$Observations,
@@ -315,10 +315,10 @@ wrangleUCBNObservations <- function(raw_data) {
 
 #' Wrangle UCBN pests table
 #'
-#' @inheritParams wrangleUCBNSiteVisit
+#' @inheritParams wrangle_ucbn_site_visit
 #'
 #' @returns raw_data with updated sites table
-wrangleUCBNPests <- function(raw_data) {
+wrangle_ucbn_pests <- function(raw_data) {
   raw_data$data$Pests <- raw_data$data$Observations %>%
     dplyr::select(parentglobalid = globalid, unitCode:verbatimIdentification) %>%
     dplyr::distinct() %>%
@@ -366,14 +366,14 @@ wrangleUCBNPests <- function(raw_data) {
 #' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master or UCBN_Aspen_Locations_pt_20210430
 #'
 #' @returns raw_data with updated sites table
-wrangleSites <- function(raw_data) {
+wrangle_sites <- function(raw_data) {
   network <- .get_network(raw_data, raw = TRUE)
 
   if(network == "MOJN") {
-    raw_data <- wrangleMOJNSites(raw_data)
+    raw_data <- wrangle_mojn_sites(raw_data)
   } else {
     # network == "UCBN" wrangling
-    raw_data <- wrangleUCBNSites(raw_data)
+    raw_data <- wrangle_ucbn_sites(raw_data)
   }
 
   return(raw_data)
@@ -384,14 +384,14 @@ wrangleSites <- function(raw_data) {
 #' @param raw_data List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database or on UCBN_Aspen_Locations_pt_20210430 and 'UCBN Aspen Survey v1'
 #'
 #' @returns raw_data with updated site visits table
-wrangleSiteVisit <- function(raw_data) {
+wrangle_site_visit <- function(raw_data) {
   network <- .get_network(raw_data, raw = TRUE)
 
   if(network == "MOJN") {
-    raw_data <- wrangleMOJNSiteVisit(raw_data)
+    raw_data <- wrangle_mojn_site_visit(raw_data)
   } else {
     # network == "UCBN" wrangling
-    raw_data <- wrangleUCBNSiteVisit(raw_data)
+    raw_data <- wrangle_ucbn_site_visit(raw_data)
   }
 
   return(raw_data)
@@ -399,33 +399,33 @@ wrangleSiteVisit <- function(raw_data) {
 
 #' #' Wrangle aspen disturbances table
 #'
-#' @inheritParams wrangleSiteVisit
+#' @inheritParams wrangle_site_visit
 #'
 #' @returns raw_data with updated disturbances table
-wrangleDisturbances <- function(raw_data) {
+wrangle_disturbances <- function(raw_data) {
   network <- .get_network(raw_data, raw = TRUE)
 
   if (network == "MOJN") {
-    raw_data <- wrangleMOJNDisturbances(raw_data)
+    raw_data <- wrangle_mojn_disturbances(raw_data)
   } else {
-    raw_data <- wrangleUCBNDisturbances(raw_data)
+    raw_data <- wrangle_ucbn_disturbances(raw_data)
   }
   return(raw_data)
 }
 
 #' Wrangle aspen observations table
 #'
-#' @inheritParams wrangleSiteVisit
+#' @inheritParams wrangle_site_visit
 #'
 #' @returns raw_data with updated observations table
-wrangleObservations <- function(raw_data) {
+wrangle_observations <- function(raw_data) {
   network <- .get_network(raw_data, raw = TRUE)
 
   if (network == "MOJN") {
-    raw_data <- wrangleMOJNObservations(raw_data)
+    raw_data <- wrangle_mojn_observations(raw_data)
   } else {
     # network == "UCBN" wrangling
-    raw_data <- wrangleUCBNObservations(raw_data)
+    raw_data <- wrangle_ucbn_observations(raw_data)
   }
 
   return(raw_data)
@@ -433,17 +433,17 @@ wrangleObservations <- function(raw_data) {
 
 #' Wrangle aspen pest table
 #'
-#' @inheritParams wrangleSiteVisit
+#' @inheritParams wrangle_site_visit
 #'
 #' @returns raw_data with updated pests table
-wranglePests <- function(raw_data) {
+wrangle_pests <- function(raw_data) {
   network <- .get_network(raw_data, raw = TRUE)
 
   if (network == "MOJN") {
-    raw_data <- wrangleMOJNPests(raw_data)
+    raw_data <- wrangle_mojn_pests(raw_data)
   } else {
     # network == "UCBN" wrangling
-    raw_data <- wrangleUCBNPests(raw_data)
+    raw_data <- wrangle_ucbn_pests(raw_data)
   }
 
   return(raw_data)
@@ -454,7 +454,7 @@ wranglePests <- function(raw_data) {
 #' @param aspen_data List of tabular wrangled aspen data tables
 #'
 #' @returns aspen_data with data package formatting
-packageAspen <- function(aspen_data) {
+package_aspen <- function(aspen_data) {
   # Remove metadata and tbls that will not be published from final data package tbls
   aspen_data$metadata <- NULL
   aspen_data$data <- aspen_data$data[!names(aspen_data$data) %in% c("AllSites", "begin_image_repeat", "Locations")]
@@ -508,9 +508,9 @@ packageAspen <- function(aspen_data) {
 #'
 #' @returns A list of aspen data frames in data package format
 #' @export
-loadAndPackageAspen <- function(network,
-                                agol_username,
-                                agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
+load_and_package_aspen <- function(network,
+                                   agol_username = "mojn_data",
+                                   agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
   # Get data for the correct network
   if (network == "MOJN") {
     raw_data <- fetchagol::fetchRawData(
@@ -554,12 +554,12 @@ loadAndPackageAspen <- function(network,
   aspen_data <- raw_data %>%
     fetchagol::cleanData(cols_to_remove = grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))),
                                                value = TRUE)) %>%
-    wrangleSites() %>%
-    wrangleSiteVisit() %>%
-    wrangleDisturbances() %>%
-    wrangleObservations() %>%
-    wranglePests() %>%
-    packageAspen()
+    wrangle_sites() %>%
+    wrangle_site_visit() %>%
+    wrangle_disturbances() %>%
+    wrangle_observations() %>%
+    wrangle_pests() %>%
+    package_aspen()
 
   # Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
   assign("aspen_data", aspen_data, envir = pkg_globals)

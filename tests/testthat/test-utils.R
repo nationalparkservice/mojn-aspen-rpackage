@@ -17,13 +17,13 @@ test_that(".get_network works for wrangled data", {
 })
 
 # Write tests
-test_that("writeAspen creates folder and CSV files", {
+test_that("write_aspen creates folder and CSV files", {
   test_aspen1 <- list(
     SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
     Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
   )
 
-  expect_error(writeAspen(test_aspen1),
+  expect_error(write_aspen(test_aspen1),
                regexp = "Data must be in the format returned by `loadAndWrangleAspen()`.",
                fixed = TRUE)
 
@@ -40,7 +40,7 @@ test_that("writeAspen creates folder and CSV files", {
     unlink(folder, recursive = TRUE)
   }
 
-  writeAspen(test_aspen2)
+  write_aspen(test_aspen2)
 
   expect_true(dir.exists(folder))
   expect_true(file.exists(file.path(folder, "MOJN_Aspen_SiteVisit.csv")))

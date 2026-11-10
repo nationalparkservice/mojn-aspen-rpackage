@@ -636,19 +636,20 @@ can be found <a href="https://github.com/nationalparkservice/imd-fetchagol-packa
 documentation.</p>
 <h4 id="data-publication">Data Publication</h4>
 <ul>
-<li>loadAndPackageAspen(): loads aspen data associated with either MOJN
-or UCBN from AGOL and wrangles into data package-formatted tables for
-publication</li>
-<li>writeAspen(): writes the loaded and wrangled aspen data to CSV
+<li>load_and_package_aspen(): loads aspen data associated with either
+MOJN or UCBN from AGOL and wrangles into data package-formatted tables
+for publication</li>
+<li>write_aspen(): writes the loaded and wrangled aspen data to CSV
 files</li>
 </ul>
 <h4 id="quality-control-qc">Quality Control (QC)</h4>
 <ul>
-<li>checkSiteAspen(): checks that each site visit has at least one live
-aspen recorded</li>
-<li>checkTreeCount(): checks for tree records in the Observations table
-that have a total count of zero or a total count greater than 250</li>
-<li>checkTreeID(): checks for trees that have not been identified</li>
+<li>check_site_aspen(): checks that each site visit has at least one
+live aspen recorded</li>
+<li>check_tree_count(): checks for tree records in the Observations
+table that have a total count of zero or a total count greater than
+250</li>
+<li>check_tree_id(): checks for trees that have not been identified</li>
 </ul>
 <h4 id="visualization">Visualization</h4>
 <p>In development.</p>

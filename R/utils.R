@@ -14,7 +14,7 @@
       network <- "UCBN"
     }
   } else {
-    # for use in QC functions
+    # for use in QC, vis functions
     if ("GRBA" %in% unique(data$data$SiteVisit$unitCode)) {
       network <- "MOJN"
     } else {
@@ -26,7 +26,7 @@
 
 #' Write loaded and wrangled aspen data to CSV files
 #'
-#' @param aspen_data List of aspen data frames in data package format, as returned by `loadAndPackageAspen()`.
+#' @param aspen_data List of aspen data frames in data package format, as returned by `load_and_package_aspen()`.
 #'
 #' @description
 #' This function creates a folder in your working directory called aspen_data_package
@@ -37,7 +37,7 @@
 #' This function
 #' @returns A folder called aspen_data_package with a CSV file for each data table
 #' @export
-writeAspen <- function(aspen_data) {
+write_aspen <- function(aspen_data) {
   # Input validation
   if (!"data" %in% names(aspen_data) || !all(sapply(aspen_data$data, is.data.frame))) {
     stop("Data must be in the format returned by `loadAndWrangleAspen()`.")

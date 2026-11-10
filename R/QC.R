@@ -6,11 +6,11 @@ globalVariables(c(
 
 #' Check that all site visits have at least one observation
 #'
-#' @param aspen_data Nested list of aspen dataframes in data package format, as returned by loadAndPackageAspen
+#' @param aspen_data Nested list of aspen dataframes in data package format, as returned by load_and_package_aspen
 #'
 #' @returns Table containing site visits that do not have at least one observation
 #' @export
-checkSiteVisits <- function(aspen_data) {
+check_site_visits <- function(aspen_data) {
   visits <- aspen_data$data$SiteVisit %>% dplyr::distinct(siteID, eventDate, visitType)
   obs <- aspen_data$data$Observations %>% dplyr::distinct(siteID, eventDate, visitType)
 
@@ -29,11 +29,11 @@ checkSiteVisits <- function(aspen_data) {
 
 #' Check for sites that were visited more than once in a year
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #' @returns Table containing site visits for sites that were visited more than once in a year
 #' @export
-checkDuplicateSiteVisits <- function(aspen_data) {
+check_duplicate_site_visits <- function(aspen_data) {
   select_cols <- c("unitCode", "siteID", "year", "eventDate", "visitType",
                    "fieldSeason", "visitNotes")
 
@@ -49,11 +49,11 @@ checkDuplicateSiteVisits <- function(aspen_data) {
 
 #' Check that each site visit has at least one live aspen recorded
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #' @returns Table containing site visits that do not have at least one live aspen recorded
 #' @export
-checkSiteAspen <- function(aspen_data) {
+check_site_aspen <- function(aspen_data) {
   live_aspen <- aspen_data$data$Observations %>%
     dplyr::group_by(siteID, eventDate, visitType) %>%
     dplyr::filter(scientificName == "Populus tremuloides" &
@@ -73,11 +73,11 @@ checkSiteAspen <- function(aspen_data) {
 
 #' Check for tree records in the Observations table that have a total count of zero or a total count greater than 250
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #' @returns Table containing tree records that have a total count of zero or a total count greater than 250
 #' @export
-checkTreeCount <- function(aspen_data) {
+check_tree_count <- function(aspen_data) {
   # Calculate total count by tree for each site visit
   tree_counts <- aspen_data$data$Observations %>%
     dplyr::group_by(siteID, eventDate, visitType, scientificName) %>%
@@ -91,11 +91,11 @@ checkTreeCount <- function(aspen_data) {
 
 #' Check for duplicate tree records in the Observations table
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #' @returns Table containing duplicate tree records in the Observations table
 #' @export
-checkDuplicateTrees <- function(aspen_data) {
+check_duplicate_trees <- function(aspen_data) {
   # Identify duplicate tree records
   dup_trees <- aspen_data$data$Observations %>%
     dplyr::group_by(siteID, eventDate, scientificName, visitType, sizeClass) %>%
@@ -119,11 +119,11 @@ checkDuplicateTrees <- function(aspen_data) {
 #' is encountered in the field, it may not be possible to identify it, but live
 #' trees should be identified.
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #' @returns Table containing rows that are missing tree identification and an indication of whether the record has live trees
 #' @export
-checkTreeID <- function(aspen_data) {
+check_tree_id <- function(aspen_data) {
   tbl <- aspen_data$data$Observations %>%
     dplyr::filter(is.na(speciesCode) | is.na(verbatimIdentification) | is.na(scientificName)) %>%
     dplyr::select(unitCode, siteID, eventDate, visitType, speciesCode, verbatimIdentification, scientificName, sizeClass, individualCount)  %>%
@@ -136,11 +136,11 @@ checkTreeID <- function(aspen_data) {
 
 #' Check for duplicate pest records for a tree
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #'@returns Table containing duplicate pest records
 #'@export
-checkDuplicatePests <- function(aspen_data) {
+check_duplicate_pests <- function(aspen_data) {
   select_cols <- c("unitCode", "siteID", "eventDate", "stand", "transect",
                    "plotNumber", "speciesCode", "scientificName", "pest")
 
@@ -155,11 +155,11 @@ checkDuplicatePests <- function(aspen_data) {
 
 #' Check for duplicate disturbance records for a site visit
 #'
-#' @inheritParams checkSiteVisits
+#' @inheritParams check_site_visits
 #'
 #'@returns Table containing duplicate disturbance records
 #'@export
-checkDuplicateDisturbance <- function(aspen_data) {
+check_duplicate_disturbances <- function(aspen_data) {
   select_cols <- c("unitCode", "siteID", "eventDate", "stand", "transect",
                    "plotNumber", "disturbance")
 

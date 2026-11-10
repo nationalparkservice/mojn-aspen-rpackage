@@ -91,9 +91,9 @@ test_data_pass <- list(data = lapply(ucbn_data$data,
                                      dplyr::filter, siteID %in% c("CIRO_11_2_1", "CIRO_24_1_1", "CIRO_54_1_2")))
 
 # Test QC functions ----
-test_that("checkSiteVisits works for pass and fail", {
+test_that("check_site_visits works for pass and fail", {
   # test fail behavior (tbl output)
-  fail <- checkSiteVisits(test_data_fail)
+  fail <- check_site_visits(test_data_fail)
 
   expect_equal(nrow(fail), 1)
   expect_equal(ncol(fail), 7) # MOJN col names
@@ -101,16 +101,16 @@ test_that("checkSiteVisits works for pass and fail", {
   expect_equal(unique(fail$siteID), "GRBA_A_063")
 
   # test pass behavior
-  pass <- checkSiteVisits(test_data_pass)
+  pass <- check_site_visits(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
 })
 
-test_that("checkDuplicateSiteVisits works for pass and fail", {
+test_that("check_duplicate_site_visits works for pass and fail", {
   # test fail behavior (tbl output)
-  fail <- checkDuplicateSiteVisits(test_data_fail)
+  fail <- check_duplicate_site_visits(test_data_fail)
 
   expect_equal(nrow(fail), 2)
   expect_equal(unique(fail$siteID), "GRBA_A_111")
@@ -119,7 +119,7 @@ test_that("checkDuplicateSiteVisits works for pass and fail", {
                               "fieldSeason", "visitNotes"))
 
   # test pass behavior
-  pass <- checkDuplicateSiteVisits(test_data_pass)
+  pass <- check_duplicate_site_visits(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 6) # UCBN col names
@@ -127,9 +127,9 @@ test_that("checkDuplicateSiteVisits works for pass and fail", {
                               "visitNotes"))
 })
 
-test_that("checkSiteAspen works for pass and fail", {
+test_that("check_site_aspen works for pass and fail", {
   # test fail behavior
-  fail <- checkSiteAspen(test_data_fail)
+  fail <- check_site_aspen(test_data_fail)
 
   expect_equal(nrow(fail), 4)
   expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_143", "GRBA_A_460"))
@@ -137,16 +137,16 @@ test_that("checkSiteAspen works for pass and fail", {
   expect_equal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
 
   # test pass behavior
-  pass <- checkSiteAspen(test_data_pass)
+  pass <- check_site_aspen(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
 })
 
-test_that("checkTreeCount works for pass and fail", {
+test_that("check_tree_count works for pass and fail", {
   # test fail behavior
-  fail <- checkTreeCount(test_data_fail)
+  fail <- check_tree_count(test_data_fail)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 5)
@@ -154,16 +154,16 @@ test_that("checkTreeCount works for pass and fail", {
   expect_all_true(fail$totalTreeCount < 1 | fail$totalTreeCount > 250)
 
   # test pass behavior
-  pass <- checkTreeCount(test_data_pass)
+  pass <- check_tree_count(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
 })
 
-test_that("checkDuplicateTrees works for pass and fail", {
+test_that("check_duplicate_trees works for pass and fail", {
   # test fail behavior
-  fail <- checkDuplicateTrees(test_data_fail)
+  fail <- check_duplicate_trees(test_data_fail)
 
   expect_equal(nrow(fail), 6)
   expect_all_true(fail$siteID == "GRBA_A_063")
@@ -171,16 +171,16 @@ test_that("checkDuplicateTrees works for pass and fail", {
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "visitType", "speciesCode", "scientificName", "sizeClass", "individualCount"))
 
   # test pass behavior
-  pass <- checkDuplicateTrees(test_data_pass)
+  pass <- check_duplicate_trees(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
 })
 
-test_that("checkTreeID works for pass and fail", {
+test_that("check_tree_id works for pass and fail", {
   # test fail behavior
-  fail <- checkTreeID(test_data_fail)
+  fail <- check_tree_id(test_data_fail)
 
   expect_equal(nrow(fail), 2)
   expect_true(fail$hasLiveTree[fail$siteID == "GRBA_A_390"])
@@ -188,23 +188,23 @@ test_that("checkTreeID works for pass and fail", {
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "verbatimIdentification", "scientificName", "hasLiveTree"))
 
   # test pass behavior
-  pass <- checkTreeID(test_data_pass)
+  pass <- check_tree_id(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
 })
 
-test_that("checkDuplicatePests works for pass and fail", {
+test_that("check_duplicate_pests works for pass and fail", {
   # test fail behavior
-  fail <- checkDuplicatePests(test_data_fail)
+  fail <- check_duplicate_pests(test_data_fail)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 6) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "scientificName", "pest"))
 
   # test pass behavior
-  pass <- checkDuplicatePests(test_data_pass)
+  pass <- check_duplicate_pests(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 9) # UCBN col names
@@ -212,16 +212,16 @@ test_that("checkDuplicatePests works for pass and fail", {
                               "plotNumber", "speciesCode", "scientificName", "pest"))
 })
 
-test_that("checkDuplicateDisturbance works for pass and fail", {
+test_that("check_duplicate_disturbances works for pass and fail", {
   # test fail behavior
-  fail <- checkDuplicateDisturbance(test_data_fail)
+  fail <- check_duplicate_disturbances(test_data_fail)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 4) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "disturbance"))
 
   # test pass behavior
-  pass <- checkDuplicateDisturbance(test_data_pass)
+  pass <- check_duplicate_disturbances(test_data_pass)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 7) # UCBN col names
