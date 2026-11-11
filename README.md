@@ -57,11 +57,13 @@ documentation.
 
 #### Quality Control (QC)
 
-- check_site_aspen(): checks that each site visit has at least one live
+- check_site_visit(): checks that each site visit has at least one live
   aspen recorded
+- check_tree_id(): checks for trees that have not been identified
 - check_tree_count(): checks for tree records in the Observations table
   that have a total count of zero or a total count greater than 250
-- check_tree_id(): checks for trees that have not been identified
+- check_size_class(): checks for records that are missing a size class
+  observation
 
 #### Visualization
 
