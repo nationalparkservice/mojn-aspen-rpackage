@@ -91,9 +91,9 @@ test_data_pass <- list(data = lapply(ucbn_data$data,
                                      dplyr::filter, siteID %in% c("CIRO_11_2_1", "CIRO_24_1_1", "CIRO_54_1_2")))
 
 # Test QC functions ----
-test_that("check_site_visits works for pass and fail", {
+test_that("check_site_visits works for pass and fail when test = observation", {
   # test fail behavior (tbl output)
-  fail <- check_site_visits(test_data_fail)
+  fail <- check_site_visits(test_data_fail, test = "observation")
 
   expect_equal(nrow(fail), 1)
   expect_equal(ncol(fail), 7) # MOJN col names
@@ -101,16 +101,16 @@ test_that("check_site_visits works for pass and fail", {
   expect_equal(unique(fail$siteID), "GRBA_A_063")
 
   # test pass behavior
-  pass <- check_site_visits(test_data_pass)
+  pass <- check_site_visits(test_data_pass, test = "observation")
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
 })
 
-test_that("check_duplicate_site_visits works for pass and fail", {
+test_that("check_site_visits works for pass and fail when test = duplicate", {
   # test fail behavior (tbl output)
-  fail <- check_duplicate_site_visits(test_data_fail)
+  fail <- check_site_visits(test_data_fail, test = "duplicate")
 
   expect_equal(nrow(fail), 2)
   expect_equal(unique(fail$siteID), "GRBA_A_111")
@@ -119,7 +119,7 @@ test_that("check_duplicate_site_visits works for pass and fail", {
                               "fieldSeason", "visitNotes"))
 
   # test pass behavior
-  pass <- check_duplicate_site_visits(test_data_pass)
+  pass <- check_site_visits(test_data_pass, test = "duplicate")
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 6) # UCBN col names
@@ -127,9 +127,9 @@ test_that("check_duplicate_site_visits works for pass and fail", {
                               "visitNotes"))
 })
 
-test_that("check_site_aspen works for pass and fail", {
+test_that("check_site_visits works for pass and fail when test = aspen", {
   # test fail behavior
-  fail <- check_site_aspen(test_data_fail)
+  fail <- check_site_visits(test_data_fail, test = "aspen")
 
   expect_equal(nrow(fail), 4)
   expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_143", "GRBA_A_460"))
@@ -137,7 +137,7 @@ test_that("check_site_aspen works for pass and fail", {
   expect_equal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
 
   # test pass behavior
-  pass <- check_site_aspen(test_data_pass)
+  pass <- check_site_visits(test_data_pass, test = "aspen")
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names

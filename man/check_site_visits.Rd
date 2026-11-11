@@ -2,16 +2,22 @@
 % Please edit documentation in R/QC.R
 \name{check_site_visits}
 \alias{check_site_visits}
-\title{Check that all site visits have at least one observation}
+\title{Check site visit table for duplicate visits or visits without observations}
 \usage{
-check_site_visits(aspen_data)
+check_site_visits(aspen_data, test)
 }
 \arguments{
-\item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by load_and_package_aspen}
+\item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
+
+\item{test}{Character string representing what to test for. Must be "observation", "duplicate" or "aspen".}
 }
 \value{
-Table containing site visits that do not have at least one observation
+Table containing site visit records that met the criteria for the specified test.
 }
 \description{
-Check that all site visits have at least one observation
+\code{check_site_visits()} performs three tests on the site visit table. When \code{test
+= "observation"} it returns site visit records without any records in the
+observations table. When \code{test = "duplicate"} it returns visit records for
+sites that were visited more than once in a calendar year. When \code{test = "aspen"}
+it returns site visit records that do not have any live aspen recorded.
 }

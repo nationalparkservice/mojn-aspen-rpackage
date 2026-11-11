@@ -2,9 +2,7 @@
 
 export(check_duplicate_disturbances)
 export(check_duplicate_pests)
-export(check_duplicate_site_visits)
 export(check_duplicate_trees)
-export(check_site_aspen)
 export(check_site_visits)
 export(check_tree_count)
 export(check_tree_id)
