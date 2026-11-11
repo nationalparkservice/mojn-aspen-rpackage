@@ -9,10 +9,10 @@ check_site_visits(aspen_data, test)
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
 
-\item{test}{Character string representing what to test for. Must be "observation", "duplicate" or "aspen".}
+\item{test}{Character string representing what test to perform. Must be "observation", "duplicate" or "aspen"}
 }
 \value{
-Table containing site visit records that met the criteria for the specified test.
+Table containing site visit records that met the criteria for the specified test
 }
 \description{
 \code{check_site_visits()} performs three tests on the site visit table. When \code{test

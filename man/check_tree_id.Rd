@@ -10,11 +10,10 @@ check_tree_id(aspen_data)
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
 }
 \value{
-Table containing rows that are missing tree identification and an indication of whether the record has live trees
+Table containing summary of trees that have not been identified and whether or not the record has a live tree recorded
 }
 \description{
-The column hasLiveTree in the results table is TRUE when an unidentified tree
-has at least one live tree recorded and is FALSE otherwise. When a dead tree
-is encountered in the field, it may not be possible to identify it, but live
-trees should be identified.
+When a dead tree is encountered in the field, it may not be possible to identify
+it. The column hasLiveTree in the results table is TRUE when an unidentified tree
+has at least one live tree recorded and is FALSE otherwise.
 }

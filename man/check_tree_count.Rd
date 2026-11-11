@@ -10,7 +10,7 @@ check_tree_count(aspen_data)
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
 }
 \value{
-Table containing summary of visits and species with a total count less than one or greater than 250.
+Table containing summary of visits and species with a total count less than one or greater than 250
 }
 \description{
 For a each species observed during a site visit, the total tree count is the

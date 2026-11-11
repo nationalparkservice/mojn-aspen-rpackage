@@ -14,9 +14,9 @@ globalVariables(c(
 #' it returns site visit records that do not have any live aspen recorded.
 #'
 #' @param aspen_data Nested list of aspen dataframes in data package format, as returned by `load_and_package_aspen()`
-#' @param test Character string representing what to test for. Must be "observation", "duplicate" or "aspen".
+#' @param test Character string representing what to test for. Must be "observation", "duplicate" or "aspen"
 #'
-#' @returns Table containing site visit records that met the criteria for the specified test.
+#' @returns Table containing site visit records that met the criteria for the specified test
 #' @export
 check_site_visits <- function(aspen_data, test) {
   select_cols <- c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes")
@@ -70,7 +70,7 @@ check_site_visits <- function(aspen_data, test) {
 #'
 #' @param aspen_data Nested list of aspen dataframes in data package format, as returned by `load_and_package_aspen()`
 #'
-#' @returns Table containing summary of visits and species with a total count less than one or greater than 250.
+#' @returns Table containing summary of visits and species with a total count less than one or greater than 250
 #' @export
 check_tree_count <- function(aspen_data) {
   # Calculate total count by tree for each site visit
@@ -109,21 +109,26 @@ check_duplicate_trees <- function(aspen_data) {
 
 #' Check for trees that have not been identified
 #'
-#' The column hasLiveTree in the results table is TRUE when an unidentified tree
-#' has at least one live tree recorded and is FALSE otherwise. When a dead tree
-#' is encountered in the field, it may not be possible to identify it, but live
-#' trees should be identified.
+#' @description
+#' When a dead tree is encountered in the field, it may not be possible to identify
+#' it. The column hasLiveTree in the results table is TRUE when an unidentified tree
+#' has at least one live tree recorded and is FALSE otherwise.
 #'
 #' @inheritParams check_tree_count
 #'
-#' @returns Table containing rows that are missing tree identification and an indication of whether the record has live trees
+#' @returns Table containing summary of trees that have not been identified and whether or not the record has a live tree recorded
 #' @export
 check_tree_id <- function(aspen_data) {
+  # Identify trees that are missing identification
   tbl <- aspen_data$data$Observations %>%
-    dplyr::filter(is.na(speciesCode) | is.na(verbatimIdentification) | is.na(scientificName)) %>%
-    dplyr::select(unitCode, siteID, eventDate, visitType, speciesCode, verbatimIdentification, scientificName, sizeClass, individualCount)  %>%
+    dplyr::filter(is.na(speciesCode) |
+                    is.na(verbatimIdentification) |
+                    is.na(scientificName)) %>%
+    dplyr::mutate(live = sizeClass %in% c("Class I", "Class II", "Class III", "Class IV", "Class V") &
+                    individualCount > 0) %>%
+    # Determine if these trees have live trees recorded
     dplyr::group_by(unitCode, siteID, eventDate, speciesCode, verbatimIdentification, scientificName) %>%
-    dplyr::summarise(hasLiveTree = any(sizeClass %in% c("Class I", "Class II", "Class III", "Class IV", "Class V") & individualCount > 0),
+    dplyr::summarise(hasLiveTree = any(live),
                      .groups = "drop")
 
   return(tbl)

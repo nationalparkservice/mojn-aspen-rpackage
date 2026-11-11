@@ -183,6 +183,7 @@ test_that("check_tree_id works for pass and fail", {
   fail <- check_tree_id(test_data_fail)
 
   expect_equal(nrow(fail), 2)
+  expect_true(ncol(fail), 7)
   expect_true(fail$hasLiveTree[fail$siteID == "GRBA_A_390"])
   expect_false(fail$hasLiveTree[fail$siteID == "GRBA_A_460"])
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "verbatimIdentification", "scientificName", "hasLiveTree"))
