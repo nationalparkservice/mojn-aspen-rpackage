@@ -44,7 +44,7 @@ testthat::test_that("write_aspen creates folder and CSV files", {
   )
 
   expect_error(write_aspen(test_aspen1),
-               regexp = "Data must be in the format returned by `loadAndWrangleAspen()`.",
+               regexp = "Data must be in the format returned by `load_and_package_aspen()`.",
                fixed = TRUE)
 
   test_aspen2 <- list(
@@ -54,7 +54,7 @@ testthat::test_that("write_aspen creates folder and CSV files", {
     )
   )
 
-  folder <- here::here("aspen_data_package")
+  folder <- here::here("aspen_data")
 
   if (dir.exists(folder)) {
     unlink(folder, recursive = TRUE)

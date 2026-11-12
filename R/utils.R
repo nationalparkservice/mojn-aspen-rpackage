@@ -92,12 +92,12 @@ fetch_ucbn_eas <- function(ucbn_locations, agol_username) {
 write_aspen <- function(aspen_data) {
   # Input validation
   if (!"data" %in% names(aspen_data) || !all(sapply(aspen_data$data, is.data.frame))) {
-    stop("Data must be in the format returned by `loadAndWrangleAspen()`.")
+    stop("Data must be in the format returned by `load_and_package_aspen()`.")
   }
 
   network <- .get_network(aspen_data)
 
-  file_path <- here::here("aspen_data_package")
+  file_path <- here::here("aspen_data")
 
   if(!dir.exists(file_path)) {
     dir.create(file_path)
