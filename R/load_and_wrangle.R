@@ -201,9 +201,10 @@ wrangle_mojn_pests <- function(raw_data) {
 #' Wrangle UCBN sites table
 #'
 #' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430
+#' @param agol_username AGOL headless account username
 #'
 #' @returns raw_data with updated sites table
-wrangle_ucbn_sites <- function(raw_data) {
+wrangle_ucbn_sites <- function(raw_data, agol_username) {
   raw_data$data$Locations <- raw_data$data$Locations %>%
     # Generate lat/long coordinates from UTM
     QCkit::generate_ll_from_utm(EastingCol = "X_Coord", NorthingCol = "Y_Coord", ZoneCol = "UTM_Zone", DatumCol = "Datum", latlong_datum = "WGS84") %>%
@@ -221,7 +222,7 @@ wrangle_ucbn_sites <- function(raw_data) {
       visitType = NA_character_
     ) %>%
     # Get elevation, aspect, slope from AGOL
-    ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = "mojn_data") %>%
+    ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = agol_username) %>%
     dplyr::select(Loc_Name, visitType, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
 
   return(raw_data)
@@ -364,16 +365,17 @@ wrangle_ucbn_pests <- function(raw_data) {
 #' Wrangle aspen sites table
 #'
 #' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master or UCBN_Aspen_Locations_pt_20210430
+#' @param agol_username AGOL headless account username
 #'
 #' @returns raw_data with updated sites table
-wrangle_sites <- function(raw_data) {
+wrangle_sites <- function(raw_data, agol_username) {
   network <- .get_network(raw_data, raw = TRUE)
 
   if(network == "MOJN") {
     raw_data <- wrangle_mojn_sites(raw_data)
   } else {
     # network == "UCBN" wrangling
-    raw_data <- wrangle_ucbn_sites(raw_data)
+    raw_data <- wrangle_ucbn_sites(raw_data, agol_username = agol_username)
   }
 
   return(raw_data)
@@ -554,7 +556,7 @@ load_and_package_aspen <- function(network,
   aspen_data <- raw_data %>%
     fetchagol::cleanData(cols_to_remove = grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))),
                                                value = TRUE)) %>%
-    wrangle_sites() %>%
+    wrangle_sites(agol_username = agol_username) %>%
     wrangle_site_visit() %>%
     wrangle_disturbances() %>%
     wrangle_observations() %>%

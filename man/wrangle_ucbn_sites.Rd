@@ -4,10 +4,12 @@
 \alias{wrangle_ucbn_sites}
 \title{Wrangle UCBN sites table}
 \usage{
-wrangle_ucbn_sites(raw_data)
+wrangle_ucbn_sites(raw_data, agol_username)
 }
 \arguments{
 \item{raw_data}{List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430}
+
+\item{agol_username}{AGOL headless account username}
 }
 \value{
 raw_data with updated sites table
