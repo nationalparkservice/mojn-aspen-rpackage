@@ -222,8 +222,9 @@ wrangle_ucbn_sites <- function(raw_data, agol_username) {
       visitType = NA_character_
     ) %>%
     # Get elevation, aspect, slope from AGOL
-    ucbn::FetchElevationAspectSlope(lat_col = "decimalLatitude", long_col =  "decimalLongitude", wkid_col = "latlong_wkid", agol_username = agol_username) %>%
-    dplyr::select(Loc_Name, visitType, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum, decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
+    fetch_ucbn_eas(agol_username = agol_username) %>%
+    dplyr::select(Loc_Name, visitType, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum,
+                  decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
 
   return(raw_data)
 }

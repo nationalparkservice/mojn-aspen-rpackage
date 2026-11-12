@@ -26,7 +26,9 @@ Imports:
 Suggests: 
     lubridate,
     stringr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tibble,
+    withr
 Config/testthat/edition: 3
 Remotes: 
     nationalparkservice/imd-fetchagol-package,
