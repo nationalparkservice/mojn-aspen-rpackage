@@ -1,10 +1,14 @@
 ---
 title: "Aspen Guide"
 output: github_document
-date: "2026-10-22"
+date: "2026-11-12"
 ---
 
-This package provides tools for use in various parts of the data life cycle for aspen data collected under the shared monitoring protocol used by Mojave Desert Network (MOJN) and Upper Columbia Basin Network (UCBN). Currently, functionality exists for creating data package tables for publication and performing QC checks. Visualization functions are in development. 
+This package supports data collected under the multi-network aspen monitoring protocol used by the Mojave Desert Network (MOJN) and the Upper Columbia Basin Network (UCBN). It provides provides tools for three distinct parts of the data life cycle: data publication, quality control, and visualization. This package is still in development.
+
+The aspen monitoring protocol and other documents can be accessed on NPS DataStore:
+[Mojave Desert Network Aspen Monitoring](https://irma.nps.gov/DataStore/Reference/Profile/2256754)
+[Upper Columbia Basin Network Aspen Monitoring](https://irma.nps.gov/DataStore/Reference/Profile/2318971)
 
 ## Installation
 
@@ -18,7 +22,7 @@ devtools::install_github(repo = "nationalparkservice/mojn-aspen-rpackage")
 
 ## AGOL Connection
 
-In order to access the aspen data, you need AGOL credentials. It is recommended that you use a headless account and that you save the password to your AGOL headless account using the keyring package in R. To add account information to the default keyring follow the steps below. The code should only have to be run once.
+To access the aspen data, you need AGOL credentials. It is recommended that you use a headless account and that you save the password to your AGOL headless account using the keyring package in R. To add account information to the default keyring follow the steps below. The code should only need to be run once.
 
 It is also recommended that the metadata in your aspen AGOL database is filled out and up to date. Instructions for filling out AGOL metadata can be found [here](https://github.com/nationalparkservice/imd-fetchagol-package). 
 
@@ -37,15 +41,15 @@ Examples of package functionality. For more information see function documentati
 
 #### Data Publication
 
-- load_and_package_aspen(): loads aspen data associated with either MOJN or UCBN from AGOL and wrangles into data package-formatted tables for publication
-- write_aspen(): writes the loaded and wrangled aspen data to CSV files
+- `load_and_package_aspen()`: loads aspen data stored on AGOL and wrangles it into data package-formatted tables for publication
+- `write_aspen()`: writes the results of `load_and_package_aspen()` to CSV files
 
 #### Quality Control (QC)
 
-- check_site_visit(): checks that each site visit has at least one live aspen recorded
-- check_tree_id(): checks for trees that have not been identified
-- check_tree_count(): checks for tree records in the Observations table that have a total count of zero or a total count greater than 250
-- check_size_class(): checks for records that are missing a size class observation
+- `check_site_visit()`: checks that each site visit has at least one live aspen recorded
+- `check_tree_id()`: checks for trees that have not been identified
+- `check_tree_count()`: checks for tree records in the Observations table that have a total count of zero or a total count greater than 250
+- `check_size_class()`: checks for records that are missing a size class observation
 
 #### Visualization
 

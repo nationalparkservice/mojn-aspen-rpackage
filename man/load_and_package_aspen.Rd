@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_and_wrangle.R
 \name{load_and_package_aspen}
 \alias{load_and_package_aspen}
-\title{Load from AGOL, wrangle and package data collected by the Mojave Desert Network and the Upper Columbia Basin Network for the shared Aspen Monitoring Protocol}
+\title{Load and package aspen data for MOJN or UCBN}
 \usage{
 load_and_package_aspen(
   network,
@@ -21,5 +21,9 @@ load_and_package_aspen(
 A list of aspen data frames in data package format
 }
 \description{
-Load from AGOL, wrangle and package data collected by the Mojave Desert Network and the Upper Columbia Basin Network for the shared Aspen Monitoring Protocol
+\code{load_and_package_aspen()} loads aspen data stored on AGOL and wrangles it into
+data package-formatted tables for publication. You must be on the NPS network
+and have AGOL credentials to access secure data. Do not hard code any passwords
+into your script; follow instructions in README to safely save passwords using
+the keyring package in R.
 }

@@ -503,7 +503,14 @@ package_aspen <- function(aspen_data) {
   return(aspen_data)
 }
 
-#' Load from AGOL, wrangle and package data collected by the Mojave Desert Network and the Upper Columbia Basin Network for the shared Aspen Monitoring Protocol
+#' Load and package aspen data for MOJN or UCBN
+#'
+#' @description
+#' `load_and_package_aspen()` loads aspen data stored on AGOL and wrangles it into
+#' data package-formatted tables for publication. You must be on the NPS network
+#' and have AGOL credentials to access secure data. Do not hard code any passwords
+#' into your script; follow instructions in README to safely save passwords using
+#' the keyring package in R.
 #'
 #' @param network String of the network code for which aspen data you wish to retrieve. MOJN or UCBN are accepted values.
 #' @param agol_username AGOL headless account username

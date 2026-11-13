@@ -13,9 +13,9 @@ write_aspen(aspen_data)
 A folder called aspen_data_package with a CSV file for each data table
 }
 \description{
-This function creates a folder in your working directory called aspen_data_package
+This function creates a folder in your working directory called aspen_data
 and writes the loaded and wrangled tables to CSV with the naming format NTWK_Aspen_Tbl.csv.
-If a folder called aspen_data_package already exists in your working directory,
+If a folder called aspen_data already exists in your working directory,
 it will overwrite existing files of the same name within that folder.
 
 This function
