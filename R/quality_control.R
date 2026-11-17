@@ -1,7 +1,7 @@
 # Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
 globalVariables(c(
   "rows", "speciesCode", "sizeClass", "individualCount", "totalTreeCount", "Status",
-  "year", "disturbance", "pest"
+  "year", "disturbance", "pest", "live"
 ))
 
 #' Check site visit table for duplicate visits or visits without observations
@@ -186,5 +186,29 @@ check_duplicate_disturbances <- function(aspen_data) {
     dplyr::select(dplyr::any_of(select_cols)) %>%
     dplyr::arrange(siteID, eventDate, disturbance)
 
+  return(tbl)
+}
+
+#' Summary count of missing values in a table
+#'
+#' @description
+#' Provides a count of missing values for each column in a table. Columns with missing
+#' values are color coded by quartile, with lower counts highlighted light yellow
+#' and higher count highlighted in orange.
+#'
+#' @inheritParams check_tree_count
+#' @param table Name of table to summarize. Must be "SiteVisit", "Disturbances", "Observations" or "Pests"
+#'
+#' @returns Table with original column names and a single row with the count of NA values in that column
+#' @export
+count_missing_values <- function(aspen_data, table) {
+  if (!table %in% c("SiteVisit", "Disturbances", "Observations", "Pests")) {
+    stop("Please provide a valid table value: SiteVisit, Disturbances, Observations or Pests.")
+  } else {
+    tbl <- aspen_data$data[[table]] %>%
+      dplyr::summarise(dplyr::across(dplyr::everything(), ~ sum(is.na(.))))
+    # %>%
+    #   format_qc(missing_row_color = TRUE)
+  }
   return(tbl)
 }

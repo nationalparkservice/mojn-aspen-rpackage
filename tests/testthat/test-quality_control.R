@@ -106,6 +106,8 @@ testthat::test_that("check_site_visits works for pass and fail when test = obser
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
+
+  expect_error(check_site_visits(test_data_pass, test = "test"))
 })
 
 testthat::test_that("check_site_visits works for pass and fail when test = duplicate", {
@@ -194,6 +196,8 @@ testthat::test_that("check_size_class works for pass and fail when test = duplic
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
+
+  expect_error(check_size_class(test_data_pass, test = "test"))
 })
 
 testthat::test_that("check_size_class works for pass and fail when test = missing", {
@@ -244,4 +248,14 @@ testthat::test_that("check_duplicate_disturbances works for pass and fail", {
   expect_equal(ncol(pass), 7) # UCBN col names
   expect_equal(names(pass), c("unitCode", "siteID", "eventDate", "stand", "transect",
                               "plotNumber", "disturbance"))
+})
+
+testthat::test_that("count_missing_values works", {
+
+  sv <- count_missing_values(test_data_fail, "SiteVisit")
+  expect_equal(sv$visitType, 2)
+  expect_equal(nrow(sv), 1)
+
+  expect_error(count_missing_values(test_data_fail, "test"))
+
 })
