@@ -19,6 +19,8 @@ Imports:
     keyring,
     magrittr,
     QCkit,
+    reactable,
+    stats,
     taxize,
     tidyr,
     ucbn,

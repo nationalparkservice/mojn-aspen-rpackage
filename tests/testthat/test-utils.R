@@ -1,3 +1,39 @@
+# Write tests
+testthat::test_that("write_aspen creates folder and CSV files", {
+  test_aspen1 <- list(
+    SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
+    Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
+  )
+
+  expect_error(write_aspen(test_aspen1),
+               regexp = "Data must be in the format returned by `load_and_package_aspen()`.",
+               fixed = TRUE)
+
+  test_aspen2 <- list(
+    data = list(
+      SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
+      Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
+    )
+  )
+
+  folder <- here::here("aspen_data")
+
+  if (dir.exists(folder)) {
+    unlink(folder, recursive = TRUE)
+  }
+
+  write_aspen(test_aspen2)
+
+  expect_true(dir.exists(folder))
+  expect_true(file.exists(file.path(folder, "MOJN_Aspen_SiteVisit.csv")))
+  expect_true(file.exists(file.path(folder, "MOJN_Aspen_Observations.csv")))
+  SiteVisit <- read.csv(file.path(folder, "MOJN_Aspen_SiteVisit.csv"))
+  expect_equal(nrow(SiteVisit), 1)
+  expect_equal(SiteVisit$unitCode, "GRBA")
+
+  unlink(folder, recursive = TRUE)
+})
+
 # Helper tests
 testthat::test_that(".get_network works for raw data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping raw data tests for .get_network, MOJN data for testing function not available.")
@@ -36,38 +72,16 @@ testthat::test_that("fetch_ucbn_eas works for saved data", {
   expect_equal(res$Aspect, 180)
 })
 
-# Write tests
-testthat::test_that("write_aspen creates folder and CSV files", {
-  test_aspen1 <- list(
-    SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
-    Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
-  )
+testthat::test_that("format_qc works", {
+  tbl <- data.frame(group = c("A", "A", "B", "B"),
+                    value = 1:4)
 
-  expect_error(write_aspen(test_aspen1),
-               regexp = "Data must be in the format returned by `load_and_package_aspen()`.",
-               fixed = TRUE)
+  # Test formatting for all tables
+  result <- format_qc(tbl)
 
-  test_aspen2 <- list(
-    data = list(
-      SiteVisit = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", observer = "KAS"),
-      Observations = data.frame(unitCode = "GRBA", eventDate = "2021-09-15", speciesCode = "POTR5" )
-    )
-  )
-
-  folder <- here::here("aspen_data")
-
-  if (dir.exists(folder)) {
-    unlink(folder, recursive = TRUE)
-  }
-
-  write_aspen(test_aspen2)
-
-  expect_true(dir.exists(folder))
-  expect_true(file.exists(file.path(folder, "MOJN_Aspen_SiteVisit.csv")))
-  expect_true(file.exists(file.path(folder, "MOJN_Aspen_Observations.csv")))
-  SiteVisit <- read.csv(file.path(folder, "MOJN_Aspen_SiteVisit.csv"))
-  expect_equal(nrow(SiteVisit), 1)
-  expect_equal(SiteVisit$unitCode, "GRBA")
-
-  unlink(folder, recursive = TRUE)
+  expect_s3_class(result, "reactable")
+  expect_true(result$x$tag$attribs$searchable)
+  expect_true(result$x$tag$attribs$nowrap)
+  expect_equal(result$x$tag$attribs$defaultPageSize, 15)
+  expect_equal(result$x$tag$attribs$theme$backgroundColor, "#FCFCFC")
 })

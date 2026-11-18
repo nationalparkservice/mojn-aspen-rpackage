@@ -4,10 +4,12 @@
 \alias{check_tree_count}
 \title{Check total tree count values}
 \usage{
-check_tree_count(aspen_data)
+check_tree_count(aspen_data, format_table = TRUE)
 }
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
+
+\item{format_table}{Logical. TRUE applies reactable table formatting, use for Rmd. Use FALSE for writing to CSV.}
 }
 \value{
 Table containing summary of visits and species with a total count less than one or greater than 250

@@ -4,12 +4,14 @@
 \alias{check_size_class}
 \title{Check for duplicate or missing size classes}
 \usage{
-check_size_class(aspen_data, test)
+check_size_class(aspen_data, test, format_table = TRUE)
 }
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
 
 \item{test}{Character string representing what test to perform. Must be "duplicate" or "missing"}
+
+\item{format_table}{Logical. TRUE applies reactable table formatting, use for Rmd. Use FALSE for writing to CSV.}
 }
 \value{
 Table containing observation records that met the criteria for the specified test

@@ -93,7 +93,7 @@ test_data_pass <- list(data = lapply(ucbn_data$data,
 # Test QC functions ----
 testthat::test_that("check_site_visits works for pass and fail when test = observation", {
   # test fail behavior (tbl output)
-  fail <- check_site_visits(test_data_fail, test = "observation")
+  fail <- check_site_visits(test_data_fail, test = "observation", format_table = FALSE)
 
   expect_equal(nrow(fail), 1)
   expect_equal(ncol(fail), 7) # MOJN col names
@@ -101,18 +101,18 @@ testthat::test_that("check_site_visits works for pass and fail when test = obser
   expect_equal(unique(fail$siteID), "GRBA_A_063")
 
   # test pass behavior
-  pass <- check_site_visits(test_data_pass, test = "observation")
+  pass <- check_site_visits(test_data_pass, test = "observation", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
 
-  expect_error(check_site_visits(test_data_pass, test = "test"))
+  expect_error(check_site_visits(test_data_pass, test = "test", format_table = FALSE))
 })
 
 testthat::test_that("check_site_visits works for pass and fail when test = duplicate", {
   # test fail behavior (tbl output)
-  fail <- check_site_visits(test_data_fail, test = "duplicate")
+  fail <- check_site_visits(test_data_fail, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(unique(fail$siteID), "GRBA_A_111")
@@ -121,7 +121,7 @@ testthat::test_that("check_site_visits works for pass and fail when test = dupli
                               "fieldSeason", "visitNotes"))
 
   # test pass behavior
-  pass <- check_site_visits(test_data_pass, test = "duplicate")
+  pass <- check_site_visits(test_data_pass, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 6) # UCBN col names
@@ -131,7 +131,7 @@ testthat::test_that("check_site_visits works for pass and fail when test = dupli
 
 testthat::test_that("check_site_visits works for pass and fail when test = aspen", {
   # test fail behavior
-  fail <- check_site_visits(test_data_fail, test = "aspen")
+  fail <- check_site_visits(test_data_fail, test = "aspen", format_table = FALSE)
 
   expect_equal(nrow(fail), 4)
   expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_143", "GRBA_A_460"))
@@ -139,7 +139,7 @@ testthat::test_that("check_site_visits works for pass and fail when test = aspen
   expect_equal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
 
   # test pass behavior
-  pass <- check_site_visits(test_data_pass, test = "aspen")
+  pass <- check_site_visits(test_data_pass, test = "aspen", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
@@ -148,7 +148,7 @@ testthat::test_that("check_site_visits works for pass and fail when test = aspen
 
 testthat::test_that("check_tree_id works for pass and fail", {
   # test fail behavior
-  fail <- check_tree_id(test_data_fail)
+  fail <- check_tree_id(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 7)
@@ -157,7 +157,7 @@ testthat::test_that("check_tree_id works for pass and fail", {
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "verbatimIdentification", "scientificName", "hasLiveTree"))
 
   # test pass behavior
-  pass <- check_tree_id(test_data_pass)
+  pass <- check_tree_id(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
@@ -166,7 +166,7 @@ testthat::test_that("check_tree_id works for pass and fail", {
 
 testthat::test_that("check_tree_count works for pass and fail", {
   # test fail behavior
-  fail <- check_tree_count(test_data_fail)
+  fail <- check_tree_count(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 5)
@@ -174,7 +174,7 @@ testthat::test_that("check_tree_count works for pass and fail", {
   expect_all_true(fail$totalTreeCount < 1 | fail$totalTreeCount > 250)
 
   # test pass behavior
-  pass <- check_tree_count(test_data_pass)
+  pass <- check_tree_count(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
@@ -183,7 +183,7 @@ testthat::test_that("check_tree_count works for pass and fail", {
 
 testthat::test_that("check_size_class works for pass and fail when test = duplicate", {
   # test fail behavior
-  fail <- check_size_class(test_data_fail, test = "duplicate")
+  fail <- check_size_class(test_data_fail, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(fail), 6)
   expect_all_true(fail$siteID == "GRBA_A_063")
@@ -191,25 +191,25 @@ testthat::test_that("check_size_class works for pass and fail when test = duplic
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "visitType", "speciesCode", "scientificName", "sizeClass", "individualCount"))
 
   # test pass behavior
-  pass <- check_size_class(test_data_pass, test = "duplicate")
+  pass <- check_size_class(test_data_pass, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
 
-  expect_error(check_size_class(test_data_pass, test = "test"))
+  expect_error(check_size_class(test_data_pass, test = "test", format_table = FALSE))
 })
 
 testthat::test_that("check_size_class works for pass and fail when test = missing", {
   # test fail behavior
-  fail <- check_size_class(test_data_fail, test = "missing")
+  fail <- check_size_class(test_data_fail, test = "missing", format_table = FALSE)
 
   expect_equal(nrow(fail), 8)
   expect_all_true(fail$siteID == "GRBA_A_063")
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "visitType", "speciesCode", "scientificName", "sizeClass", "individualCount"))
 
   # test pass behavior
-  pass <- check_size_class(test_data_pass, test = "missing")
+  pass <- check_size_class(test_data_pass, test = "missing", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
@@ -218,14 +218,14 @@ testthat::test_that("check_size_class works for pass and fail when test = missin
 
 testthat::test_that("check_duplicate_pests works for pass and fail", {
   # test fail behavior
-  fail <- check_duplicate_pests(test_data_fail)
+  fail <- check_duplicate_pests(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 6) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "scientificName", "pest"))
 
   # test pass behavior
-  pass <- check_duplicate_pests(test_data_pass)
+  pass <- check_duplicate_pests(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 9) # UCBN col names
@@ -235,14 +235,14 @@ testthat::test_that("check_duplicate_pests works for pass and fail", {
 
 testthat::test_that("check_duplicate_disturbances works for pass and fail", {
   # test fail behavior
-  fail <- check_duplicate_disturbances(test_data_fail)
+  fail <- check_duplicate_disturbances(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 4) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "disturbance"))
 
   # test pass behavior
-  pass <- check_duplicate_disturbances(test_data_pass)
+  pass <- check_duplicate_disturbances(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 7) # UCBN col names
@@ -252,10 +252,10 @@ testthat::test_that("check_duplicate_disturbances works for pass and fail", {
 
 testthat::test_that("count_missing_values works", {
 
-  sv <- count_missing_values(test_data_fail, "SiteVisit")
+  sv <- count_missing_values(test_data_fail, "SiteVisit", format_table = FALSE)
   expect_equal(sv$visitType, 2)
   expect_equal(nrow(sv), 1)
 
-  expect_error(count_missing_values(test_data_fail, "test"))
+  expect_error(count_missing_values(test_data_fail, "test", format_table = FALSE))
 
 })

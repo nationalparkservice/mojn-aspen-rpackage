@@ -4,12 +4,14 @@
 \alias{check_site_visits}
 \title{Check site visit table for duplicate visits or visits without observations}
 \usage{
-check_site_visits(aspen_data, test)
+check_site_visits(aspen_data, test, format_table = TRUE)
 }
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
 
 \item{test}{Character string representing what test to perform. Must be "observation", "duplicate" or "aspen"}
+
+\item{format_table}{Logical. TRUE applies reactable table formatting, use for Rmd. Use FALSE for writing to CSV.}
 }
 \value{
 Table containing site visit records that met the criteria for the specified test

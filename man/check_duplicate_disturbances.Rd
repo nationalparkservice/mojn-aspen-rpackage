@@ -4,10 +4,12 @@
 \alias{check_duplicate_disturbances}
 \title{Check for duplicate disturbance records for a site visit}
 \usage{
-check_duplicate_disturbances(aspen_data)
+check_duplicate_disturbances(aspen_data, format_table = TRUE)
 }
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
+
+\item{format_table}{Logical. TRUE applies reactable table formatting, use for Rmd. Use FALSE for writing to CSV.}
 }
 \value{
 Table containing duplicate disturbance records

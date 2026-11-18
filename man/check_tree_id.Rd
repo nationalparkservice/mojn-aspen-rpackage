@@ -4,10 +4,12 @@
 \alias{check_tree_id}
 \title{Check for trees that have not been identified}
 \usage{
-check_tree_id(aspen_data)
+check_tree_id(aspen_data, format_table = TRUE)
 }
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
+
+\item{format_table}{Logical. TRUE applies reactable table formatting, use for Rmd. Use FALSE for writing to CSV.}
 }
 \value{
 Table containing summary of trees that have not been identified and whether or not the record has a live tree recorded

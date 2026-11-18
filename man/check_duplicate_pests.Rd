@@ -4,10 +4,12 @@
 \alias{check_duplicate_pests}
 \title{Check for duplicate pest records for a tree}
 \usage{
-check_duplicate_pests(aspen_data)
+check_duplicate_pests(aspen_data, format_table = TRUE)
 }
 \arguments{
 \item{aspen_data}{Nested list of aspen dataframes in data package format, as returned by \code{load_and_package_aspen()}}
+
+\item{format_table}{Logical. TRUE applies reactable table formatting, use for Rmd. Use FALSE for writing to CSV.}
 }
 \value{
 Table containing duplicate pest records
