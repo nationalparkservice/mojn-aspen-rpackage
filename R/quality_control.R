@@ -110,7 +110,7 @@ check_tree_id <- function(aspen_data, format_table = TRUE) {
 #' @export
 check_tree_count <- function(aspen_data, format_table = TRUE) {
   # Calculate total count by tree for each site visit
-  tree_counts <- aspen_data$data$Observations %>%
+  tbl <- aspen_data$data$Observations %>%
     dplyr::group_by(siteID, eventDate, visitType, scientificName) %>%
     dplyr::summarise(totalTreeCount = sum(individualCount),
                      .groups = "drop") %>%
@@ -119,7 +119,7 @@ check_tree_count <- function(aspen_data, format_table = TRUE) {
 
   if (format_table) { tbl <- format_qc(tbl) }
 
-  return(tree_counts)
+  return(tbl)
 }
 
 #' Check for duplicate or missing size classes
