@@ -602,7 +602,7 @@ padding-top: 0px;
 <body>
 
 <h1 id="aspen-guide">Aspen Guide</h1>
-<p>2026-10-22</p>
+<p>2026-11-18</p>
 <p>This package supports data collected under the multi-network aspen
 monitoring protocol used by the Mojave Desert Network (MOJN) and the
 Upper Columbia Basin Network (UCBN). It provides provides tools for
@@ -647,15 +647,18 @@ publication</li>
 </ul>
 <h4 id="quality-control-qc">Quality Control (QC)</h4>
 <ul>
-<li><code>check_site_visit()</code>: checks that each site visit has at
-least one live aspen recorded</li>
+<li><code>check_site_visit()</code>: checks that each site visit has
+observations recorded; checks that each site visit has at least one live
+aspen recorded; checks for sites that were visited more than once in a
+calendar year</li>
 <li><code>check_tree_id()</code>: checks for trees that have not been
-identified</li>
+identified and whether any were alive</li>
 <li><code>check_tree_count()</code>: checks for tree records in the
 Observations table that have a total count of zero or a total count
 greater than 250</li>
-<li><code>check_size_class()</code>: checks for records that are missing
-a size class observation</li>
+<li><code>check_size_class()</code>: checks for trees that are missing a
+size class record; checks for trees with multiple records for a single
+size class</li>
 </ul>
 <h4 id="visualization">Visualization</h4>
 <p>In development.</p>

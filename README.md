@@ -1,6 +1,6 @@
 Aspen Guide
 ================
-2026-10-22
+2026-11-18
 
 This package supports data collected under the multi-network aspen
 monitoring protocol used by the Mojave Desert Network (MOJN) and the
@@ -62,14 +62,17 @@ documentation.
 
 #### Quality Control (QC)
 
-- `check_site_visit()`: checks that each site visit has at least one
-  live aspen recorded
-- `check_tree_id()`: checks for trees that have not been identified
+- `check_site_visit()`: checks that each site visit has observations
+  recorded; checks that each site visit has at least one live aspen
+  recorded; checks for sites that were visited more than once in a
+  calendar year
+- `check_tree_id()`: checks for trees that have not been identified and
+  whether any were alive
 - `check_tree_count()`: checks for tree records in the Observations
   table that have a total count of zero or a total count greater than
   250
-- `check_size_class()`: checks for records that are missing a size class
-  observation
+- `check_size_class()`: checks for trees that are missing a size class
+  record; checks for trees with multiple records for a single size class
 
 #### Visualization
 
