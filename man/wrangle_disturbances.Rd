@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_and_wrangle.R
 \name{wrangle_disturbances}
 \alias{wrangle_disturbances}
-\title{#' Wrangle aspen disturbances table}
+\title{Wrangle aspen disturbances table}
 \usage{
 wrangle_disturbances(raw_data)
 }
@@ -13,5 +13,5 @@ wrangle_disturbances(raw_data)
 raw_data with updated disturbances table
 }
 \description{
-#' Wrangle aspen disturbances table
+Wrangle aspen disturbances table
 }

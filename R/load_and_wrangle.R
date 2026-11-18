@@ -400,7 +400,7 @@ wrangle_site_visit <- function(raw_data) {
   return(raw_data)
 }
 
-#' #' Wrangle aspen disturbances table
+#' Wrangle aspen disturbances table
 #'
 #' @inheritParams wrangle_site_visit
 #'

@@ -10,13 +10,11 @@ write_aspen(aspen_data)
 \item{aspen_data}{List of aspen data frames in data package format, as returned by \code{load_and_package_aspen()}.}
 }
 \value{
-A folder called aspen_data_package with a CSV file for each data table
+A folder called aspen_data with a CSV file for each data table
 }
 \description{
 This function creates a folder in your working directory called aspen_data
 and writes the loaded and wrangled tables to CSV with the naming format NTWK_Aspen_Tbl.csv.
 If a folder called aspen_data already exists in your working directory,
 it will overwrite existing files of the same name within that folder.
-
-This function
 }

@@ -11,8 +11,7 @@ globalVariables(c("latlong_wkid"))
 #' If a folder called aspen_data already exists in your working directory,
 #' it will overwrite existing files of the same name within that folder.
 #'
-#' This function
-#' @returns A folder called aspen_data_package with a CSV file for each data table
+#' @returns A folder called aspen_data with a CSV file for each data table
 #' @export
 write_aspen <- function(aspen_data) {
   # Input validation
@@ -57,7 +56,7 @@ write_aspen <- function(aspen_data) {
     }
   } else {
     # for use in QC, vis functions
-    if ("GRBA" %in% unique(data$data$SiteVisit$unitCode)) {
+    if (any(c("GRBA", "PARA") %in% unique(data$data$SiteVisit$unitCode))) {
       network <- "MOJN"
     } else {
       network <- "UCBN"
@@ -120,7 +119,7 @@ fetch_ucbn_eas <- function(ucbn_locations, agol_username) {
 #' @description
 #' Applies consistent formatting to quality control tables to be displayed in Rmd
 #' documents. For all tables: applies consistent color scheme, sizes column widths,
-#' includes a search bar, turns of wrapping for cell contents.
+#' includes a search bar, turns off wrapping for cell contents.
 #'
 #' Additional optional formatting includes grouped cell shading when column names
 #' are supplied using shade_by param and proportional cell coloring when both

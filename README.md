@@ -4,8 +4,8 @@ Aspen Guide
 
 This package supports data collected under the multi-network aspen
 monitoring protocol used by the Mojave Desert Network (MOJN) and the
-Upper Columbia Basin Network (UCBN). It provides provides tools for
-three distinct parts of the data life cycle: data publication, quality
+Upper Columbia Basin Network (UCBN). It provides tools for three
+distinct parts of the data life cycle: data publication, quality
 control, and visualization. This package is still in development.
 
 The aspen monitoring protocol and other documents can be accessed on NPS
@@ -62,7 +62,7 @@ documentation.
 
 #### Quality Control (QC)
 
-- `check_site_visit()`: checks that each site visit has observations
+- `check_site_visits()`: checks that each site visit has observations
   recorded; checks that each site visit has at least one live aspen
   recorded; checks for sites that were visited more than once in a
   calendar year

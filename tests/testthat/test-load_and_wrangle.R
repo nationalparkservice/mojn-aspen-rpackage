@@ -1,11 +1,11 @@
 # MOJN tests ----
 
 # wrangle_mojn_sites
-test_that("wrangle_mojn_sites works", {
+testthat::test_that("wrangle_mojn_sites works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_mojn_sites, MOJN data for testing wrangle functions not available.")
 
   # Test if trailing underscores are removed from column names
-  expect_false(any(stringr::str_detect(names(mojn_wrangled_sites), "_$")))
+  expect_false(any(stringr::str_detect(names(mojn_wrangled_sites$data$AllSites), "_$")))
 
   # Test that all shift values are expanded
   expect_all_true(unique(mojn_wrangled_sites$data$AllSites$shift) %in% c("Not Shifted", "North", "South", "East", "West", NA_character_))
@@ -27,7 +27,7 @@ test_that("wrangle_mojn_sites works", {
 })
 
 # wrangle_mojn_site_visit
-test_that("wrangle_mojn_site_visit works", {
+testthat::test_that("wrangle_mojn_site_visit works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_mojn_site_visit, MOJN data for testing wrangle functions not available.")
 
   # Test that park codes and protocol version values are expanded
@@ -40,7 +40,7 @@ test_that("wrangle_mojn_site_visit works", {
 })
 
 # wrangleMOJNDisturbance
-test_that("wrangle_mojn_disturbances works", {
+testthat::test_that("wrangle_mojn_disturbances works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_mojn_disturbances, MOJN data for testing wrangle functions not available.")
 
   # Test that disturbance codes are expanded
@@ -51,7 +51,7 @@ test_that("wrangle_mojn_disturbances works", {
 })
 
 # wrangle_mojn_observations
-test_that("wrangle_mojn_observations works", {
+testthat::test_that("wrangle_mojn_observations works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_mojn_observations, MOJN data for testing wrangle functions not available.")
 
   # Test expanding size classes and sci names
@@ -68,7 +68,7 @@ test_that("wrangle_mojn_observations works", {
 })
 
 # wrangle_mojn_pests
-test_that("wrangle_mojn_pests works", {
+testthat::test_that("wrangle_mojn_pests works", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_mojn_pests, MOJN data for testing wrangle functions not available.")
 
   # Test column additions/renames are present
@@ -81,7 +81,7 @@ test_that("wrangle_mojn_pests works", {
 # UCBN tests ----
 
 # wrangle_ucbn_sites
-test_that("wrangle_ucbn_sites works", {
+testthat::test_that("wrangle_ucbn_sites works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_ucbn_sites, UCBN data for testing wrangle functions not available.")
 
   # Test column additions/renames are present
@@ -89,7 +89,7 @@ test_that("wrangle_ucbn_sites works", {
 })
 
 # wrangleUCBNSiteVisist
-test_that("wrangle_ucbn_site_visit works", {
+testthat::test_that("wrangle_ucbn_site_visit works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_ucbn_site_visit, UCBN data for testing wrangle functions not available.")
 
   # Test codes expanded
@@ -101,7 +101,7 @@ test_that("wrangle_ucbn_site_visit works", {
 })
 
 # wrangle_ucbn_disturbances
-test_that("wrangle_ucbn_disturbances works", {
+testthat::test_that("wrangle_ucbn_disturbances works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_ucbn_disturbances, UCBN data for testing wrangle functions not available.")
 
   # Test column additions/renames are present
@@ -109,7 +109,7 @@ test_that("wrangle_ucbn_disturbances works", {
 })
 
 # wrangle_ucbn_observations
-test_that("wrangle_ucbn_observations works", {
+testthat::test_that("wrangle_ucbn_observations works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_ucbn_observations, UCBN data for testing wrangle functions not available.")
 
   # Test expanding size classes and sci names
@@ -126,7 +126,7 @@ test_that("wrangle_ucbn_observations works", {
 })
 
 # wrangle_ucbn_pests
-test_that("wrangle_ucbn_observations works", {
+testthat::test_that("wrangle_ucbn_pests works", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_ucbn_observations, UCBN data for testing wrangle functions not available.")
 
   # Test pest code expansions
@@ -141,62 +141,62 @@ test_that("wrangle_ucbn_observations works", {
 
 # Combined function tests ----
 # wrangle_sites
-test_that("wrangle_sites works for MOJN data", {
+testthat::test_that("wrangle_sites works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_sites, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangle_sites(mojn_raw), mojn_wrangled_sites)
 })
 
-test_that("wrangle_sites works for UCBN data", {
+testthat::test_that("wrangle_sites works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_sites, UCBN data for testing wrangle functions not available.")
   expect_equal(wrangle_sites(ucbn_raw), ucbn_wrangled_sites)
 })
 
 # wrangle_site_visit
-test_that("wrangle_site_visit works for MOJN data", {
+testthat::test_that("wrangle_site_visit works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_site_visit, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangle_site_visit(mojn_wrangled_sites), mojn_wrangled_sitevisit)
 })
 
-test_that("wrangle_site_visit works for UCBN data", {
+testthat::test_that("wrangle_site_visit works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_site_visit, UCBN data for testing wrangle functions not available.")
   expect_equal(wrangle_site_visit(ucbn_wrangled_sites), ucbn_wrangled_sitevisit)
 })
 
 # wrangle_disturbances
-test_that("wrangle_disturbances works for MOJN data", {
+testthat::test_that("wrangle_disturbances works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_disturbances, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangle_disturbances(mojn_wrangled_sitevisit), mojn_wrangled_disturbance)
 })
 
-test_that("wrangle_disturbances works for UCBN data", {
+testthat::test_that("wrangle_disturbances works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_disturbances, UCBN data for testing wrangle functions not available.")
   expect_equal(wrangle_disturbances(ucbn_wrangled_sitevisit), ucbn_wrangled_disturbance)
 })
 
 # wrangle_observations
-test_that("wrangle_observations works for MOJN data", {
+testthat::test_that("wrangle_observations works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_observations, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangle_observations(mojn_wrangled_disturbance), mojn_wrangled_observations)
 })
 
-test_that("wrangle_observations works for UCBN data", {
+testthat::test_that("wrangle_observations works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_observations, UCBN data for testing wrangle functions not available.")
   expect_equal(wrangle_observations(ucbn_wrangled_disturbance), ucbn_wrangled_observations)
 })
 
 # wrangle_pests
-test_that("wrangle_pests works for MOJN data", {
+testthat::test_that("wrangle_pests works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for wrangle_pests, MOJN data for testing wrangle functions not available.")
   expect_equal(wrangle_pests(mojn_wrangled_observations), mojn_wrangled_pests)
 })
 
-test_that("wrangle_pests works for UCBN data", {
+testthat::test_that("wrangle_pests works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for wrangle_pests, UCBN data for testing wrangle functions not available.")
   expect_equal(wrangle_pests(ucbn_wrangled_observations), ucbn_wrangled_pests)
 })
 
 # package_aspen
-test_that("package_aspen works for MOJN data", {
+testthat::test_that("package_aspen works for MOJN data", {
   skip_if_not(file.exists(mojn_wrangle_test_data), "Skipping tests for package_aspen, MOJN data for testing wrangle functions not available.")
 
   # Test removal of metadata and sites tbl
@@ -219,7 +219,7 @@ test_that("package_aspen works for MOJN data", {
   }
 })
 
-test_that("package_aspen works for UCBN data", {
+testthat::test_that("package_aspen works for UCBN data", {
   skip_if_not(file.exists(ucbn_wrangle_test_data), "Skipping tests for package_aspen, UCBN data for testing wrangle functions not available.")
 
   # Test removal of metadata and tbls
@@ -242,7 +242,7 @@ test_that("package_aspen works for UCBN data", {
 })
 
 # load_and_package_aspen
-test_that("load_and_package_aspen() works", {
+testthat::test_that("load_and_package_aspen() works", {
   expect_error(load_and_package_aspen(network = "mojave desert network", agol_username = "placeholder", agol_password = "placeholder"))
 
   # Test that fx only returns data

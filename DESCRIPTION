@@ -17,17 +17,17 @@ Imports:
     here,
     janitor,
     keyring,
+    lubridate,
     magrittr,
     QCkit,
     reactable,
     stats,
+    stringr,
     taxize,
     tidyr,
     ucbn,
     utils
 Suggests: 
-    lubridate,
-    stringr,
     testthat (>= 3.0.0),
     tibble,
     withr
