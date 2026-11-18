@@ -20,9 +20,10 @@ ucbn_wrangle_test_data <- test_path("ucbn_wrangle_test_data.rds")
 
 if (file.exists(ucbn_wrangle_test_data)) {
   ucbn_raw <- readRDS(ucbn_wrangle_test_data)
+  test_agol_username <- "mojn_data" # will only be used if fetch_ucbn_eas data is not already cached
 
   # Create data for testing each fx
-  ucbn_wrangled_sites <- wrangle_ucbn_sites(ucbn_raw)
+  ucbn_wrangled_sites <- wrangle_ucbn_sites(ucbn_raw, agol_username = test_agol_username)
   ucbn_wrangled_sitevisit <- wrangle_ucbn_site_visit(ucbn_wrangled_sites)
   ucbn_wrangled_disturbance <- wrangle_ucbn_disturbances(ucbn_wrangled_sitevisit)
   ucbn_wrangled_observations <- wrangle_ucbn_observations(ucbn_wrangled_disturbance)

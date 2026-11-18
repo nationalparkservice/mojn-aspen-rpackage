@@ -9,7 +9,7 @@ wrangle_ucbn_sites(raw_data, agol_username)
 \arguments{
 \item{raw_data}{List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430}
 
-\item{agol_username}{AGOL headless account username}
+\item{agol_username}{AGOL headless account username as supplied to \code{load_and_package_aspen()}. Passed to \code{fetch_ucbn_eas()} for ESRI API call}
 }
 \value{
 raw_data with updated sites table
