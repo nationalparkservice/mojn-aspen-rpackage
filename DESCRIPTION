@@ -17,16 +17,20 @@ Imports:
     here,
     janitor,
     keyring,
+    lubridate,
     magrittr,
     QCkit,
+    reactable,
+    stats,
+    stringr,
     taxize,
     tidyr,
     ucbn,
     utils
 Suggests: 
-    lubridate,
-    stringr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tibble,
+    withr
 Config/testthat/edition: 3
 Remotes: 
     nationalparkservice/imd-fetchagol-package,

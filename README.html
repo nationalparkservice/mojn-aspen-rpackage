@@ -602,13 +602,16 @@ padding-top: 0px;
 <body>
 
 <h1 id="aspen-guide">Aspen Guide</h1>
-<p>2026-10-22</p>
-<p>This package provides tools for use in various parts of the data life
-cycle for aspen data collected under the shared monitoring protocol used
-by Mojave Desert Network (MOJN) and Upper Columbia Basin Network (UCBN).
-Currently, functionality exists for creating data package tables for
-publication and performing QC checks. Visualization functions are in
-development.</p>
+<p>2026-11-18</p>
+<p>This package supports data collected under the multi-network aspen
+monitoring protocol used by the Mojave Desert Network (MOJN) and the
+Upper Columbia Basin Network (UCBN). It provides tools for three
+distinct parts of the data life cycle: data publication, quality
+control, and visualization. This package is still in development.</p>
+<p>The aspen monitoring protocol and other documents can be accessed on
+NPS DataStore: <a href="https://irma.nps.gov/DataStore/Reference/Profile/2256754">Mojave
+Desert Network Aspen Monitoring</a> <a href="https://irma.nps.gov/DataStore/Reference/Profile/2318971">Upper
+Columbia Basin Network Aspen Monitoring</a></p>
 <h2 id="installation">Installation</h2>
 <p>If you already have a GitHub token for RStudio run the code below to
 download the aspen package. If you haven’t generated a GitHub token for
@@ -618,11 +621,11 @@ package.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># install.packages(&quot;devtools&quot;)</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="at">repo =</span> <span class="st">&quot;nationalparkservice/mojn-aspen-rpackage&quot;</span>)</span></code></pre></div>
 <h2 id="agol-connection">AGOL Connection</h2>
-<p>In order to access the aspen data, you need AGOL credentials. It is
+<p>To access the aspen data, you need AGOL credentials. It is
 recommended that you use a headless account and that you save the
 password to your AGOL headless account using the keyring package in R.
 To add account information to the default keyring follow the steps
-below. The code should only have to be run once.</p>
+below. The code should only need to be run once.</p>
 <p>It is also recommended that the metadata in your aspen AGOL database
 is filled out and up to date. Instructions for filling out AGOL metadata
 can be found <a href="https://github.com/nationalparkservice/imd-fetchagol-package">here</a>.</p>
@@ -636,19 +639,26 @@ can be found <a href="https://github.com/nationalparkservice/imd-fetchagol-packa
 documentation.</p>
 <h4 id="data-publication">Data Publication</h4>
 <ul>
-<li>loadAndPackageAspen(): loads aspen data associated with either MOJN
-or UCBN from AGOL and wrangles into data package-formatted tables for
+<li><code>load_and_package_aspen()</code>: loads aspen data stored on
+AGOL and wrangles it into data package-formatted tables for
 publication</li>
-<li>writeAspen(): writes the loaded and wrangled aspen data to CSV
-files</li>
+<li><code>write_aspen()</code>: writes the results of
+<code>load_and_package_aspen()</code> to CSV files</li>
 </ul>
 <h4 id="quality-control-qc">Quality Control (QC)</h4>
 <ul>
-<li>checkSiteAspen(): checks that each site visit has at least one live
-aspen recorded</li>
-<li>checkTreeCount(): checks for tree records in the Observations table
-that have a total count of zero or a total count greater than 250</li>
-<li>checkTreeID(): checks for trees that have not been identified</li>
+<li><code>check_site_visits()</code>: checks that each site visit has
+observations recorded; checks that each site visit has at least one live
+aspen recorded; checks for sites that were visited more than once in a
+calendar year</li>
+<li><code>check_tree_id()</code>: checks for trees that have not been
+identified and whether any were alive</li>
+<li><code>check_tree_count()</code>: checks for tree records in the
+Observations table that have a total count of zero or a total count
+greater than 250</li>
+<li><code>check_size_class()</code>: checks for trees that are missing a
+size class record; checks for trees with multiple records for a single
+size class</li>
 </ul>
 <h4 id="visualization">Visualization</h4>
 <p>In development.</p>

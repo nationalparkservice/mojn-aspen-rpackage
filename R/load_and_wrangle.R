@@ -1,0 +1,577 @@
+#' @import fetchagol
+
+# Initiate new environment accessible from within package
+pkg_globals <- new.env(parent = emptyenv())
+
+# Assign global variables to avoid the "no visible binding for global variable 'x'" error in build checks
+globalVariables(c(
+  "Community", "Disturbance", "disturbanceCode", "EndTime", "Evaluation",
+  "GRTSAssessment", "GeodeticDatum", "GlobalID", "Lat", "LegacyFrame",
+  "NavigationNotes", "Observer", "Park", "ParkName", "Pest", "pestCodes",
+  "ProtocolVersion", "Shift", "Site", "SiteDescription", "SpeciesCode",
+  "speciesName", "Stand_Height", "StartTime", "Stratum", "Recorder",
+  "VerbatimCoordinateSystem", "VerbatimCoordinates", "VerbatimSRS",
+  "verbatimCoordinateSystem", "verbatimCoordinates", "verbatimSRS",
+  "VisitDate", "VisitNotes", "VisitType", "Xcoord", "Ycoord", "Zone",
+  "aspect", "description","parentglobalid", "elevation", "globalid",
+  "grtsAssessment", "grtsOrder", "label", "lat", "Long", "name", "park",
+  "parkName", "scientificName", "site", "slope", "submittedName",
+  "taxonRank",  "unitCode", "unitName", "verbatimIdentification",
+  "verbatimSrs", "eventDate", "FieldSeason", "siteID", "geodeticDatum",
+  "protocolVersion", "shift", "Aspect", "aspectInDegrees", "Coord_Syst",
+  "Elevation", "Loc_Name", "PlotNum", "Site_Height", "Slope", "Stand",
+  "Transect", "UTM_Zone", "Unique_ID", "decimalLatitude", "decimalLongitude",
+  "UnitCode", "cntClass6List", "sppSummaryCode", "matchedCanonicalSimple",
+  "visitType"
+))
+
+#' Wrangle MOJN sites table
+#'
+#' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master
+#'
+#' @returns raw_data with updated sites table
+wrangle_mojn_sites <- function(raw_data) {
+  raw_data$data$AllSites <- raw_data$data$AllSites %>%
+    # Remove trailing underscores from column names
+    dplyr::rename_with(~ sub("_$", "", .x)) %>%
+    dplyr::mutate(
+      # Expand codes to differentiate between NA char and NA
+      shift = dplyr::case_when(
+        Shift == "NA" ~ "Not Shifted",
+        Shift == "S" ~ "South",
+        Shift == "N" ~ "North",
+        Shift == "E" ~ "East",
+        Shift == "W" ~ "West",
+        TRUE ~ NA_character_),
+      # Format UTM coordinates using DWC column names
+      verbatimCoordinates = dplyr::case_when(
+        is.na(Xcoord) | is.na(Ycoord) ~ NA_character_,
+        Park == "GRBA" ~ paste0("11N ", Xcoord, "m E ", Ycoord, "m N"),
+        Park == "PARA" ~ paste0("12N ", Xcoord, "m E ", Ycoord, "m N")),
+      # Add geographic info columns
+      verbatimCoordinateSystem = ifelse(!is.na(verbatimCoordinates), "UTM", NA_character_),
+      verbatimSRS = ifelse(!is.na(verbatimCoordinates), "EPSG:4269", NA_character_), # code for NAD83
+      geodeticDatum = ifelse(!is.na(verbatimCoordinates), "EPSG:4326", NA_character_) # code for WGS84
+    ) %>%
+    dplyr::relocate(shift, verbatimCoordinateSystem, verbatimSRS, verbatimCoordinates, geodeticDatum, .before = Lat) %>%
+    dplyr::relocate(Stand_Height, .after = Zone) %>%
+    dplyr::rename(
+      # DWC names
+      decimalLatitude = Lat,
+      decimalLongitude = Long,
+      # Add units to column names
+      standHeightInMeters = Stand_Height,
+      elevationInMeters = Elevation,
+      slopeInPercent = Slope,
+      aspectInDegrees = Aspect) %>%
+    # Remove unnecessary columns
+    dplyr::select(-SiteDescription, -LegacyFrame, -NavigationNotes, -Xcoord, -Ycoord, -GlobalID, -Shift, -Evaluation, -Status, -GRTSAssessment)
+
+  return(raw_data)
+}
+
+#' Wrangle MOJN site visit table
+#'
+#' @param raw_data List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database
+#'
+#' @returns raw_data with updated site visit table
+wrangle_mojn_site_visit <- function(raw_data) {
+  raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+    # Expand park code
+    dplyr::left_join(raw_data$metadata$SiteVisit$fields$Park$lookup$lookup_df %>%
+                       dplyr::select(Park = name, ParkName = description),
+                     by = dplyr::join_by(Park)) %>%
+    dplyr::relocate(ParkName, .after = Park) %>%
+    # Expand protocol version
+    dplyr::left_join(raw_data$metadata$SiteVisit$fields$ProtocolVersion$lookup$lookup_df %>%
+                       dplyr::select(ProtocolVersion = name, label),
+                     by = join_by(ProtocolVersion)) %>%
+    dplyr::mutate(eventDate = as.Date(VisitDate),
+                  protocolVersion = label) %>%
+    # Join site info from all sites tbl
+    dplyr::left_join(raw_data$data$AllSites,
+                     by = dplyr::join_by(Park, Site)) %>%
+    dplyr::relocate(Stratum, Zone, Community, eventDate, VisitType, FieldSeason, .before = Observer) %>%
+    dplyr::relocate(protocolVersion, VisitNotes, .after = dplyr::last_col()) %>%
+    dplyr::rename(
+      # CSO standard column names
+      unitCode = Park,
+      unitName = ParkName,
+      siteID = Site,
+      # DWC name
+      recordedBy = Recorder) %>%
+    dplyr::select(-StartTime, -EndTime, -label, -parentglobalid, -VisitDate, -ProtocolVersion)
+
+  return(raw_data)
+}
+
+#' Wrangle MOJN disturbances table
+#'
+#' @inheritParams wrangle_mojn_site_visit
+#'
+#' @returns raw_data with updated disturbances table
+wrangle_mojn_disturbances <- function(raw_data) {
+  # Join site visit info to disturbance tbl
+  raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
+    dplyr::right_join(raw_data$data$Disturbances,
+                      by = dplyr::join_by("parentglobalid")) %>%
+    dplyr::rename(disturbanceCode = Disturbance) %>%
+    # Expand disturbance codes
+    dplyr::left_join(raw_data$metadata$Disturbances$fields$Disturbance$lookup$lookup_df %>%
+                       dplyr::select(disturbanceCode = name, disturbance = label),
+                     by = join_by(disturbanceCode)) %>%
+    dplyr::select(-parentglobalid, -globalid, -disturbanceCode)
+
+  return(raw_data)
+}
+
+#' Wrangle MOJN observations table
+#'
+#' @inheritParams wrangle_mojn_site_visit
+#'
+#' @returns raw_data with updated observations table
+wrangle_mojn_observations <- function(raw_data) {
+  # Join site visit info to observations tbl
+  raw_data$data$Observations <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community) %>%
+    dplyr::right_join(raw_data$data$Observations,
+                      by = dplyr::join_by("parentglobalid")) %>%
+    # Expand species codes to show full scientific names
+    dplyr::left_join(raw_data$metadata$Observations$fields$SpeciesCode$lookup$lookup_df %>%
+                       dplyr::mutate(verbatimIdentification = gsub("\\s*\\([^)]*\\)", "", label)),
+                     by = join_by(SpeciesCode == name)) %>%
+    dplyr::relocate(verbatimIdentification, .after = SpeciesCode) %>%
+    # Pivot to tidy format
+    tidyr::pivot_longer(cols = dplyr::contains("class"),
+                        names_to = "sizeClass",
+                        values_to = "individualCount") %>%
+    dplyr::mutate(
+      # Display class sizes as roman numerals to match UCBN data and protocol
+      sizeClass = dplyr::case_when(
+        sizeClass == "Class1" ~ "Class I",
+        sizeClass == "Class2" ~ "Class II",
+        sizeClass == "Class3" ~ "Class III",
+        sizeClass == "Class4" ~ "Class IV",
+        sizeClass == "Class5" ~ "Class V",
+        sizeClass == "Class6" ~ "Class VI"
+      ),
+      # Add class descriptions
+      sizeClassDescription = dplyr::case_when(
+        sizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        sizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        sizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        sizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        sizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        sizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+      )) %>%
+    dplyr::select(-parentglobalid, -label)
+
+  # Remove ID col from SiteVisit tbl, not needed after join
+  raw_data$data$SiteVisit["globalid"] <- NULL
+
+  return(raw_data)
+}
+
+#' Wrangle MOJN pests table
+#'
+#' @inheritParams wrangle_mojn_site_visit
+#'
+#' @returns raw_data with updated pests table
+wrangle_mojn_pests <- function(raw_data) {
+  # Join site visit and species info from observations tbl to pests
+  raw_data$data$Pests <- raw_data$data$Observations %>%
+    dplyr::select(parentglobalid = globalid, unitCode, unitName, siteID, eventDate, VisitType, Community, SpeciesCode, verbatimIdentification) %>%
+    dplyr::distinct() %>%
+    dplyr::right_join(raw_data$data$Pests,
+                      by = join_by("parentglobalid")) %>%
+    dplyr::rename(pestCodes = Pest) %>%
+    # Expand out shortened pest names
+    dplyr::left_join(raw_data$metadata$Pests$fields$Pest$lookup$lookup_df %>%
+                       dplyr::select(pestCodes = name, pest = label),
+                     by = join_by(pestCodes)) %>%
+    dplyr::select(-parentglobalid, -globalid, -pestCodes)
+
+  # Remove ID col from Observations tbl, not needed after join
+  raw_data$data$Observations["globalid"] <- NULL
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN sites table
+#'
+#' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430
+#' @param agol_username AGOL headless account username as supplied to `load_and_package_aspen()`. Passed to `fetch_ucbn_eas()` for ESRI API call
+#'
+#' @returns raw_data with updated sites table
+wrangle_ucbn_sites <- function(raw_data, agol_username) {
+  raw_data$data$Locations <- raw_data$data$Locations %>%
+    # Generate lat/long coordinates from UTM
+    QCkit::generate_ll_from_utm(EastingCol = "X_Coord", NorthingCol = "Y_Coord", ZoneCol = "UTM_Zone", DatumCol = "Datum", latlong_datum = "WGS84") %>%
+    dplyr::mutate(
+      # Format UTM coordinates using DWC column names
+      verbatimCoordinates = ifelse(is.na(.data$X_Coord) | is.na(.data$Y_Coord), NA_character_, paste0(UTM_Zone, " ", .data$X_Coord, "m E ", .data$Y_Coord, "m N")),
+      # Add geographic info columns
+      verbatimSRS = ifelse(!is.na(verbatimCoordinates), "EPSG:4269", NA_character_), # code for NAD83
+      geodeticDatum = ifelse(!is.na(verbatimCoordinates), "EPSG:4326", NA_character_), # code for WGS84
+      # Add wkid column for lat long coordinates for use in generating elevation, aspect, slope
+      # From ESRI Developer: 4326 is generally assumed to be the spatial reference when talking about "latitude" or "longitude"
+      # (https://developers.arcgis.com/documentation/spatial-references/)
+      latlong_wkid = "4326",
+      # Add visit type column for consistency with legacy access data and MOJN data
+      visitType = NA_character_
+    ) %>%
+    # Get elevation, aspect, slope from AGOL
+    fetch_ucbn_eas(agol_username = agol_username) %>%
+    dplyr::select(Loc_Name, visitType, verbatimCoordinateSystem = Coord_Syst, verbatimSRS, verbatimCoordinates, geodeticDatum,
+                  decimalLatitude, decimalLongitude, elevationInMeters = Elevation, slopeInPercent = Slope, aspectInDegrees = Aspect)
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN site visits table
+#'
+#' @param raw_data List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on UCBN_Aspen_Locations_pt_20210430 and 'UCBN Aspen Survey v1'
+#'
+#' @returns raw_data with updated sites table
+wrangle_ucbn_site_visit <- function(raw_data) {
+  raw_data$data$SiteVisit <- raw_data$data$SiteVisit %>%
+    dplyr::mutate(
+      # Expand park names
+      unitName = dplyr::case_when(
+        Park == "CIRO" ~ "City of Rocks National Reserve",
+        Park == "CRMO" ~ "Craters of the Moon National Monument and Preserve"),
+      # Format date
+      eventDate = as.Date(VisitDate),
+      # Expand protocol version code to match value in Access data
+      protocolVersion = ifelse(ProtocolVersion == 1, "ASPN_1_0", ProtocolVersion)) %>%
+    dplyr::relocate(unitName, .after = Park) %>%
+    dplyr::left_join(raw_data$data$Locations,
+                     by = join_by(Unique_ID == Loc_Name)) %>%
+    # Order cols
+    dplyr::select(globalid, unitCode = Park, unitName, siteID = Unique_ID,  Stand, Transect,
+                  plotNumber = PlotNum, eventDate, visitType, standHeightInMeters = Site_Height,
+                  verbatimCoordinateSystem:aspectInDegrees, protocolVersion, VisitNotes)
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN disturbances table
+#'
+#' @inheritParams wrangle_ucbn_site_visit
+#'
+#' @returns raw_data with updated sites table
+wrangle_ucbn_disturbances <- function(raw_data) {
+  raw_data$data$Disturbances <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, unitCode:eventDate) %>%
+    dplyr::right_join(raw_data$data$Disturbances,
+                      by = "parentglobalid") %>%
+    # dplyr::mutate(Disturbance = ) %>% # expand out codes like ArborHist
+    dplyr::select(-parentglobalid, -globalid)
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN observations table
+#'
+#' @inheritParams wrangle_ucbn_site_visit
+#'
+#' @returns raw_data with updated sites table
+wrangle_ucbn_observations <- function(raw_data) {
+  raw_data$data$Observations <- raw_data$data$SiteVisit %>%
+    dplyr::select(parentglobalid = globalid, unitCode:visitType) %>%
+    dplyr::right_join(raw_data$data$Observations,
+                      by = "parentglobalid") %>%
+    # Isolate species name
+    dplyr::mutate(verbatimIdentification = gsub("\\s*\\([^)]*\\)", "", sppSummaryCode)) %>%
+    dplyr::select(-parentglobalid, -(sppSummaryCode:cntClass6List)) %>%
+    # Pivot to tidy format
+    tidyr::pivot_longer(cols = dplyr::contains("class"),
+                        names_to = "sizeClass",
+                        values_to = "individualCount") %>%
+    dplyr::mutate(
+      # Display class sizes as roman numerals to match UCBN data and protocol
+      sizeClass = dplyr::case_when(
+        sizeClass == "Class1" ~ "Class I",
+        sizeClass == "Class2" ~ "Class II",
+        sizeClass == "Class3" ~ "Class III",
+        sizeClass == "Class4" ~ "Class IV",
+        sizeClass == "Class5" ~ "Class V",
+        sizeClass == "Class6" ~ "Class VI"
+      ),
+      # Add class descriptions
+      sizeClassDescription = dplyr::case_when(
+        sizeClass == "Class I" ~ "Suckers or seedlings less than 46 cm tall",
+        sizeClass == "Class II" ~ "Suckers or seedlings 46 cm to 152 cm tall",
+        sizeClass == "Class III" ~ "Greater than 152 cm and up to 2.5 cm in dbh",
+        sizeClass == "Class IV" ~ "Greater than 2.5 cm in dbh and shorter than 75% of the stand height",
+        sizeClass == "Class V" ~ "Greater than 2.5 cm in dbh and taller than 75% of the stand height",
+        sizeClass == "Class VI" ~ "Dead stems greater than 2.5 cm in dbh"
+      ))
+
+  # Remove ID col from SiteVisit tbl, not needed after join
+  raw_data$data$SiteVisit["globalid"] <- NULL
+
+  return(raw_data)
+}
+
+#' Wrangle UCBN pests table
+#'
+#' @inheritParams wrangle_ucbn_site_visit
+#'
+#' @returns raw_data with updated sites table
+wrangle_ucbn_pests <- function(raw_data) {
+  raw_data$data$Pests <- raw_data$data$Observations %>%
+    dplyr::select(parentglobalid = globalid, unitCode:verbatimIdentification) %>%
+    dplyr::distinct() %>%
+    dplyr::right_join(raw_data$data$Pests,
+                      by = join_by("parentglobalid")) %>%
+    dplyr::mutate(
+      # Temporary hard codes - get lookups from Devin
+      # Expand pest shorthands
+      pest = dplyr::case_when(
+        Pest == "Borer" | Pest == "WoodBorer" ~ "Bark/Wood Boring Insect",
+        #Pest == "Cankers" ~ "Cankers",
+        Pest == "Defol" ~ "Defoliating Insect",
+        Pest == "FoliageD" ~ "Foliage Disease",
+        #Pest == "Gall" ~ "Gall",
+        Pest == "Mistletoe" ~ "Dwarf Mistletoe",
+        Pest == "MPineBeetle" ~ "Mountain Pine Beetle",
+        Pest == "StemDecay" ~ "Stem Decay",
+        Pest == "WPBRust" ~ "White Pine Blister Rust",
+        TRUE ~ Pest
+      ),
+      # Add pest evidence descriptions
+      pestDescription = dplyr::case_when(
+        pest == "Bark/Wood Boring Insect" ~ "Entrance/exit holes in bark, frass.",
+        pest == "Cankers" ~ "Lesions on bark, often with broken, callused, sooty, discolored, or weeping/bleeding bark. Fruiting bodies may be present or absent.",
+        pest == "Defoliating Insect" ~ "Leaves partially or entirely eaten by insects, also larva droppings, leaves folded into shelters, silk.",
+        pest == "Foliage Disease" ~ "Dark or discolored spots or patches on leaves, curled leaves, or leaves completely brown.",
+        pest == "Gall" ~ "Irregularly swollen areas on twigs and branches.",
+        pest == "Dwarf Mistletoe" ~ "Parasitic plant growing on conifer branches.",
+        pest == "Mountain Pine Beetle" ~ "Pitch tubes, frass, J-shaped galleries under bark on pines.",
+        pest == "Stem Decay" ~ "Fungal conks on stem.",
+        pest == "White Pine Blister Rust" ~ "Cankers, swelling, broken bark, aecia, pitching, and chewing, on white pine species.",
+      )
+    ) %>%
+    dplyr::select(-parentglobalid, -globalid, -Pest, -visitType)
+
+  # Remove ID col from Observations tbl, not needed after join
+  raw_data$data$Observations["globalid"] <- NULL
+
+  return(raw_data)
+}
+
+
+#' Wrangle aspen sites table
+#'
+#' @param raw_data List of tabular data and metadata returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master or UCBN_Aspen_Locations_pt_20210430
+#' @param agol_username AGOL headless account username as supplied to `load_and_package_aspen()`. Only used for UCBN data
+#'
+#' @returns raw_data with updated sites table
+wrangle_sites <- function(raw_data, agol_username) {
+  network <- .get_network(raw_data, raw = TRUE)
+
+  if(network == "MOJN") {
+    raw_data <- wrangle_mojn_sites(raw_data)
+  } else {
+    # network == "UCBN" wrangling
+    raw_data <- wrangle_ucbn_sites(raw_data, agol_username = agol_username)
+  }
+
+  return(raw_data)
+}
+
+#' Wrangle aspen site visits table
+#'
+#' @param raw_data List of tabular data and metadata containing the results returned by using \code{fetchagol::fetchRawData} on MOJN_Aspen_Sites_Master and MOJN_Aspen_Database or on UCBN_Aspen_Locations_pt_20210430 and 'UCBN Aspen Survey v1'
+#'
+#' @returns raw_data with updated site visits table
+wrangle_site_visit <- function(raw_data) {
+  network <- .get_network(raw_data, raw = TRUE)
+
+  if(network == "MOJN") {
+    raw_data <- wrangle_mojn_site_visit(raw_data)
+  } else {
+    # network == "UCBN" wrangling
+    raw_data <- wrangle_ucbn_site_visit(raw_data)
+  }
+
+  return(raw_data)
+}
+
+#' Wrangle aspen disturbances table
+#'
+#' @inheritParams wrangle_site_visit
+#'
+#' @returns raw_data with updated disturbances table
+wrangle_disturbances <- function(raw_data) {
+  network <- .get_network(raw_data, raw = TRUE)
+
+  if (network == "MOJN") {
+    raw_data <- wrangle_mojn_disturbances(raw_data)
+  } else {
+    raw_data <- wrangle_ucbn_disturbances(raw_data)
+  }
+  return(raw_data)
+}
+
+#' Wrangle aspen observations table
+#'
+#' @inheritParams wrangle_site_visit
+#'
+#' @returns raw_data with updated observations table
+wrangle_observations <- function(raw_data) {
+  network <- .get_network(raw_data, raw = TRUE)
+
+  if (network == "MOJN") {
+    raw_data <- wrangle_mojn_observations(raw_data)
+  } else {
+    # network == "UCBN" wrangling
+    raw_data <- wrangle_ucbn_observations(raw_data)
+  }
+
+  return(raw_data)
+}
+
+#' Wrangle aspen pest table
+#'
+#' @inheritParams wrangle_site_visit
+#'
+#' @returns raw_data with updated pests table
+wrangle_pests <- function(raw_data) {
+  network <- .get_network(raw_data, raw = TRUE)
+
+  if (network == "MOJN") {
+    raw_data <- wrangle_mojn_pests(raw_data)
+  } else {
+    # network == "UCBN" wrangling
+    raw_data <- wrangle_ucbn_pests(raw_data)
+  }
+
+  return(raw_data)
+}
+
+#' Format wrangled aspen data for data package publication
+#'
+#' @param aspen_data List of tabular wrangled aspen data tables
+#'
+#' @returns aspen_data with data package formatting
+package_aspen <- function(aspen_data) {
+  # Remove metadata and tbls that will not be published from final data package tbls
+  aspen_data$metadata <- NULL
+  aspen_data$data <- aspen_data$data[!names(aspen_data$data) %in% c("AllSites", "begin_image_repeat", "Locations")]
+
+  tbl_names <- names(aspen_data$data)
+
+  # Resolve taxonomy to ITIS, GBIF
+  scinames <- taxize::gna_verifier(names = unique(aspen_data$data$Observations$verbatimIdentification), data_sources = c(3, 11)) %>%
+    dplyr::select(verbatimIdentification = submittedName, scientificName = matchedCanonicalSimple) %>%
+    # Correct MOJN name not caught by gna_verifier
+    dplyr::mutate(scientificName = ifelse(verbatimIdentification == "Pinus longeava" | verbatimIdentification == "Pinus longaeva", "Pinus longaeva", scientificName))
+
+  aspen_data$data <- lapply(tbl_names, function(nm) {
+    tbl <- aspen_data$data[[nm]]
+    # Wrangling for all tbls
+    tbl <- tbl %>%
+      janitor::clean_names(case = "lower_camel") %>%
+      # Fix acronym capitalization
+      dplyr::rename(dplyr::any_of(c(siteID = "siteId",
+                                    verbatimSRS = "verbatimSrs",
+                                    GRTSAssessment = "grtsAssessment",
+                                    GRTSOrder = "grtsOrder"))) %>%
+      dplyr::mutate(
+        # DWC columns
+        type = "Event",
+        basisOfRecord = ifelse(nm == "SiteVisit", "Event", "HumanObservation"),
+        # Replace white spaces with a single space
+        dplyr::across(dplyr::where(is.character), ~ stringr::str_replace_all(., "\\s+", " "))
+      )
+
+    # Update taxonomy
+    if("verbatimIdentification" %in% names(tbl)) {
+      tbl <- tbl %>%
+        # Join resolved taxonomy
+        dplyr::left_join(scinames,
+                         by = "verbatimIdentification") %>%
+        QCkit::get_taxon_rank("scientificName") %>%
+        dplyr::relocate(scientificName, taxonRank, .after = verbatimIdentification)
+    }
+    return(tbl)
+  })
+  names(aspen_data$data) <- tbl_names
+  return(aspen_data)
+}
+
+#' Load and package aspen data for MOJN or UCBN
+#'
+#' @description
+#' `load_and_package_aspen()` loads aspen data stored on AGOL and wrangles it into
+#' data package-formatted tables for publication. You must be on the NPS network
+#' and have AGOL credentials to access secure data. Do not hard code any passwords
+#' into your script; follow instructions in README to safely save passwords using
+#' the keyring package in R.
+#'
+#' @param network String of the network code for which aspen data you wish to retrieve. MOJN or UCBN are accepted values.
+#' @param agol_username AGOL headless account username
+#' @param agol_password AGOL headless account password (do not hard code this into your scripts!)
+#'
+#' @returns A list of aspen data frames in data package format
+#' @export
+load_and_package_aspen <- function(network,
+                                   agol_username = "mojn_data",
+                                   agol_password = keyring::key_get(service = "AGOL", username = agol_username)) {
+  # Get data for the correct network
+  if (network == "MOJN") {
+    raw_data <- fetchagol::fetchRawData(
+      "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Aspen_Test_Visit_NonSpatial_gdb/FeatureServer",
+      agol_username,
+      agol_password
+    )
+    raw_site_data <- fetchagol::fetchRawData(
+      "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AspenSites2/FeatureServer",
+      agol_username,
+      agol_password
+    )
+
+    # Combine for processing
+    raw_data$data$AllSites <- raw_site_data$data$`MOJN Aspen Sites Master`
+    raw_data$metadata$AllSites <- raw_site_data$metadata$`MOJN Aspen Sites Master`
+
+  } else if (network == "UCBN") {
+    raw_data <- fetchagol::fetchRawData(
+      "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/survey123_11607b1ef8eb4a3397b6686acf61b9d2_results/FeatureServer",
+      agol_username,
+      agol_password
+    )
+    raw_site_data <- fetchagol::fetchRawData(
+      "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/UCBN_Aspen_Locations_pt_20210430/FeatureServer",
+      agol_username,
+      agol_password,
+      include_metadata = FALSE
+    )
+
+    # Combine for processing
+    raw_data$data$Locations <- raw_site_data$data$UCBN_Aspen_Locations_pt_20210430
+
+  } else {
+    stop(
+      "Only 'MOJN' or 'UCBN' are allowed as network values, enclosed in double quotes."
+    )
+  }
+
+  # Wrangle all tbls
+  aspen_data <- raw_data %>%
+    fetchagol::cleanData(cols_to_remove = grep("Edit|Creat|DataProcessing", unique(unlist(lapply(raw_data$data, names))),
+                                               value = TRUE)) %>%
+    wrangle_sites(agol_username = agol_username) %>%
+    wrangle_site_visit() %>%
+    wrangle_disturbances() %>%
+    wrangle_observations() %>%
+    wrangle_pests() %>%
+    package_aspen()
+
+  # Store imported data as a global variable so that all package functions can access it without the user having to pass the dataset as an argument
+  assign("aspen_data", aspen_data, envir = pkg_globals)
+  invisible(aspen_data)
+}

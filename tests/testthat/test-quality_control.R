@@ -4,7 +4,7 @@ test_data_fail <- list(
     SiteVisit = dplyr::tribble(
       ~unitCode, ~siteID,      ~eventDate,   ~stratum,     ~zone,                   ~visitType,  ~fieldSeason,  ~observer,  ~visitNotes,
       "GRBA",    "GRBA_A_063", "2021-09-03", "Lexington",  "Lexington Creek",       "Primary",   "GRBA_2021",   "SJU",      "No matching obs",
-      "GRBA",    "GRBA_A_063", "2022-09-04", "Lexington",  "Lexington Creek",       "Primary",   "GRBA_2022",   "SJU",      "Duplicate tree records",
+      "GRBA",    "GRBA_A_063", "2022-09-04", "Lexington",  "Lexington Creek",       "Primary",   "GRBA_2022",   "SJU",      "Duplicate and missing size class records",
       "GRBA",    "GRBA_A_390", "2022-07-11", "Strawberry", "Strawberry Creek",      "Primary",   "GRBA_2022",   "HTP",      "Missing tree ID with live trees",
       "GRBA",    "GRBA_A_143", "2023-09-06", "Snake",      "Snake Creek",           "Primary",   "GRBA_2023",   "RW",       "0 count",
       "GRBA",    "GRBA_A_460", "2023-09-12", "West Snake", "Pine and Ridge Creeks", "Primary",   "GRBA_2023",   "KUY",      "Missing tree ID without live trees",
@@ -15,7 +15,7 @@ test_data_fail <- list(
 
     Observations = dplyr::tribble(
       ~unitCode, ~siteID,  ~eventDate,     ~visitType,  ~speciesCode, ~verbatimIdentification, ~scientificName,       ~sizeClass,  ~individualCount,
-      # Duplicate tree records
+      # Duplicate size class records
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class I",   4,
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  7,
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class II",  4,
@@ -23,7 +23,7 @@ test_data_fail <- list(
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class III", 3,
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  1,
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class IV",  1,
-      "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   1,
+      #"GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class V",   1,
       "GRBA",  "GRBA_A_063", "2022-09-04", "Primary",  "POTR5",      "Populus tremuloides",   "Populus tremuloides", "Class VI",  2,
       # Missing tree ID with live trees
       "GRBA",  "GRBA_A_390", "2022-07-11", "Primary",     NA,           NA,                      NA,                    "Class I",   0,
@@ -91,26 +91,32 @@ test_data_pass <- list(data = lapply(ucbn_data$data,
                                      dplyr::filter, siteID %in% c("CIRO_11_2_1", "CIRO_24_1_1", "CIRO_54_1_2")))
 
 # Test QC functions ----
-test_that("checkSiteVisits works for pass and fail", {
+testthat::test_that("check_site_visits works for pass and fail when test = observation", {
   # test fail behavior (tbl output)
-  fail <- checkSiteVisits(test_data_fail)
+  fail <- check_site_visits(test_data_fail, test = "observation", format_table = FALSE)
 
   expect_equal(nrow(fail), 1)
   expect_equal(ncol(fail), 7) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
   expect_equal(unique(fail$siteID), "GRBA_A_063")
 
+  # test formatting applies
+  formatted <- check_site_visits(test_data_fail, test = "observation")
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkSiteVisits(test_data_pass)
+  pass <- check_site_visits(test_data_pass, test = "observation", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
+
+  expect_error(check_site_visits(test_data_pass, test = "test", format_table = FALSE))
 })
 
-test_that("checkDuplicateSiteVisits works for pass and fail", {
+testthat::test_that("check_site_visits works for pass and fail when test = duplicate", {
   # test fail behavior (tbl output)
-  fail <- checkDuplicateSiteVisits(test_data_fail)
+  fail <- check_site_visits(test_data_fail, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(unique(fail$siteID), "GRBA_A_111")
@@ -118,8 +124,12 @@ test_that("checkDuplicateSiteVisits works for pass and fail", {
   expect_equal(names(fail), c("unitCode", "siteID", "year", "eventDate", "visitType",
                               "fieldSeason", "visitNotes"))
 
+  # test formatting applies
+  formatted <- check_site_visits(test_data_fail, test = "duplicate")
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkDuplicateSiteVisits(test_data_pass)
+  pass <- check_site_visits(test_data_pass, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 6) # UCBN col names
@@ -127,84 +137,127 @@ test_that("checkDuplicateSiteVisits works for pass and fail", {
                               "visitNotes"))
 })
 
-test_that("checkSiteAspen works for pass and fail", {
+testthat::test_that("check_site_visits works for pass and fail when test = aspen", {
   # test fail behavior
-  fail <- checkSiteAspen(test_data_fail)
+  fail <- check_site_visits(test_data_fail, test = "aspen", format_table = FALSE)
 
   expect_equal(nrow(fail), 4)
   expect_equal(unique(fail$siteID), c("GRBA_A_063", "GRBA_A_390", "GRBA_A_143", "GRBA_A_460"))
   expect_equal(ncol(fail), 7) # MOJN col names
   expect_equal(names(fail), c("unitCode", "siteID", "eventDate", "stratum", "zone", "visitType", "visitNotes"))
 
+  # test formatting applies
+  formatted <- check_site_visits(test_data_fail, test = "aspen")
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkSiteAspen(test_data_pass)
+  pass <- check_site_visits(test_data_pass, test = "aspen", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 5) # UCBN col names
   expect_setequal(names(pass), c("unitCode", "siteID", "eventDate", "visitType", "visitNotes"))
 })
 
-test_that("checkTreeCount works for pass and fail", {
+testthat::test_that("check_tree_id works for pass and fail", {
   # test fail behavior
-  fail <- checkTreeCount(test_data_fail)
+  fail <- check_tree_id(test_data_fail, format_table = FALSE)
+
+  expect_equal(nrow(fail), 2)
+  expect_equal(ncol(fail), 7)
+  expect_true(fail$hasLiveTree[fail$siteID == "GRBA_A_390"])
+  expect_false(fail$hasLiveTree[fail$siteID == "GRBA_A_460"])
+  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "verbatimIdentification", "scientificName", "hasLiveTree"))
+
+  # test formatting applies
+  formatted <- check_tree_id(test_data_fail)
+  expect_s3_class(formatted, "reactable")
+
+  # test pass behavior
+  pass <- check_tree_id(test_data_pass, format_table = FALSE)
+
+  expect_equal(nrow(pass), 0)
+  expect_equal(ncol(fail), ncol(pass))
+  expect_equal(names(fail), names(pass))
+})
+
+testthat::test_that("check_tree_count works for pass and fail", {
+  # test fail behavior
+  fail <- check_tree_count(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 5)
   expect_setequal(c("GRBA_A_061", "GRBA_A_143"), unique(fail$siteID))
   expect_all_true(fail$totalTreeCount < 1 | fail$totalTreeCount > 250)
 
+  # test formatting applies
+  formatted <- check_tree_count(test_data_fail)
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkTreeCount(test_data_pass)
+  pass <- check_tree_count(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
 })
 
-test_that("checkDuplicateTrees works for pass and fail", {
+testthat::test_that("check_size_class works for pass and fail when test = duplicate", {
   # test fail behavior
-  fail <- checkDuplicateTrees(test_data_fail)
+  fail <- check_size_class(test_data_fail, test = "duplicate", format_table = FALSE)
 
   expect_equal(nrow(fail), 6)
   expect_all_true(fail$siteID == "GRBA_A_063")
   expect_all_true(fail$scientificName == "Populus tremuloides")
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "visitType", "speciesCode", "scientificName", "sizeClass", "individualCount"))
 
+  # test formatting applies
+  formatted <- check_size_class(test_data_fail, test = "duplicate")
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkDuplicateTrees(test_data_pass)
+  pass <- check_size_class(test_data_pass, test = "duplicate", format_table = FALSE)
+
+  expect_equal(nrow(pass), 0)
+  expect_equal(ncol(fail), ncol(pass))
+  expect_equal(names(fail), names(pass))
+
+  expect_error(check_size_class(test_data_pass, test = "test", format_table = FALSE))
+})
+
+testthat::test_that("check_size_class works for pass and fail when test = missing", {
+  # test fail behavior
+  fail <- check_size_class(test_data_fail, test = "missing", format_table = FALSE)
+
+  expect_equal(nrow(fail), 8)
+  expect_all_true(fail$siteID == "GRBA_A_063")
+  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "visitType", "speciesCode", "scientificName", "sizeClass", "individualCount"))
+
+  # test formatting applies
+  formatted <- check_size_class(test_data_fail, test = "missing")
+  expect_s3_class(formatted, "reactable")
+
+  # test pass behavior
+  pass <- check_size_class(test_data_pass, test = "missing", format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(fail), ncol(pass))
   expect_equal(names(fail), names(pass))
 })
 
-test_that("checkTreeID works for pass and fail", {
+testthat::test_that("check_duplicate_pests works for pass and fail", {
   # test fail behavior
-  fail <- checkTreeID(test_data_fail)
-
-  expect_equal(nrow(fail), 2)
-  expect_true(fail$hasLiveTree[fail$siteID == "GRBA_A_390"])
-  expect_false(fail$hasLiveTree[fail$siteID == "GRBA_A_460"])
-  expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "verbatimIdentification", "scientificName", "hasLiveTree"))
-
-  # test pass behavior
-  pass <- checkTreeID(test_data_pass)
-
-  expect_equal(nrow(pass), 0)
-  expect_equal(ncol(fail), ncol(pass))
-  expect_equal(names(fail), names(pass))
-})
-
-test_that("checkDuplicatePests works for pass and fail", {
-  # test fail behavior
-  fail <- checkDuplicatePests(test_data_fail)
+  fail <- check_duplicate_pests(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 6) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "speciesCode", "scientificName", "pest"))
 
+  # test formatting applies
+  formatted <- check_duplicate_pests(test_data_fail)
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkDuplicatePests(test_data_pass)
+  pass <- check_duplicate_pests(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 9) # UCBN col names
@@ -212,19 +265,36 @@ test_that("checkDuplicatePests works for pass and fail", {
                               "plotNumber", "speciesCode", "scientificName", "pest"))
 })
 
-test_that("checkDuplicateDisturbance works for pass and fail", {
+testthat::test_that("check_duplicate_disturbances works for pass and fail", {
   # test fail behavior
-  fail <- checkDuplicateDisturbance(test_data_fail)
+  fail <- check_duplicate_disturbances(test_data_fail, format_table = FALSE)
 
   expect_equal(nrow(fail), 2)
   expect_equal(ncol(fail), 4) # MOJN col names
   expect_setequal(names(fail), c("unitCode", "siteID", "eventDate", "disturbance"))
 
+  # test formatting applies
+  formatted <- check_duplicate_disturbances(test_data_fail)
+  expect_s3_class(formatted, "reactable")
+
   # test pass behavior
-  pass <- checkDuplicateDisturbance(test_data_pass)
+  pass <- check_duplicate_disturbances(test_data_pass, format_table = FALSE)
 
   expect_equal(nrow(pass), 0)
   expect_equal(ncol(pass), 7) # UCBN col names
   expect_equal(names(pass), c("unitCode", "siteID", "eventDate", "stand", "transect",
                               "plotNumber", "disturbance"))
+})
+
+testthat::test_that("count_missing_values works", {
+
+  sv <- count_missing_values(test_data_fail, "SiteVisit", format_table = FALSE)
+  expect_equal(sv$visitType, 2)
+  expect_equal(nrow(sv), 1)
+
+  expect_error(count_missing_values(test_data_fail, "test", format_table = FALSE))
+
+  # test formatting applies
+  formatted <- count_missing_values(test_data_fail, "SiteVisit")
+  expect_s3_class(formatted, "reactable")
 })
