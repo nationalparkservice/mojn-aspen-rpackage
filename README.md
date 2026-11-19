@@ -1,5 +1,7 @@
 Aspen Guide
 ================
+**NOTE: THIS REPO HAS BEEN MIGRATED TO THE DGEC AND WILL NOT BE MAINTAINED HERE.** SEE https://github.com/DOI-NPS/aspen-rpackage.
+
 2026-11-18
 
 This package supports data collected under the multi-network aspen
